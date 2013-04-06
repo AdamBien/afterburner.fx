@@ -15,9 +15,9 @@ import javax.inject.Inject;
  * @author adam-bien.com
  */
 public class InjectionProvider {
-    
+
     private static Map<Class, Object> providers = new HashMap<>();
-    
+
     public static Object instantiateAndInject(Class clazz) {
         Object product = providers.get(clazz);
         if (product == null) {
@@ -30,10 +30,10 @@ public class InjectionProvider {
                 throw new IllegalStateException("Cannot instantiate product: " + clazz, ex);
             }
         }
-        
+
         return product;
     }
-    
+
     public static void injectMembers(Object instance) {
         Class<? extends Object> aClass = instance.getClass();
         Field[] fields = aClass.getDeclaredFields();
@@ -42,15 +42,15 @@ public class InjectionProvider {
                 Class<?> type = field.getType();
                 Object target = instantiateAndInject(type);
                 try {
-                    field.set(instance, target);
                     field.setAccessible(true);
+                    field.set(instance, target);
                 } catch (IllegalArgumentException | IllegalAccessException ex) {
                     throw new IllegalStateException("Cannot set field: " + field, ex);
                 }
             }
         }
     }
-    
+
     public static void initialize(Object instance) {
         Class<? extends Object> aClass = instance.getClass();
         Method[] declaredMethods = aClass.getDeclaredMethods();
@@ -65,7 +65,7 @@ public class InjectionProvider {
             }
         }
     }
-    
+
     public static void forgetAll() {
         providers.clear();
     }
