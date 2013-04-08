@@ -19,7 +19,6 @@ package com.airhacks.afterburner.injection;
  * limitations under the License.
  * #L%
  */
-
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
@@ -52,6 +51,14 @@ public class InjectionProviderTest {
     public void productInitialization() {
         InitializableProduct product = (InitializableProduct) InjectionProvider.instantiateAndInject(InitializableProduct.class);
         assertTrue(product.isInitialized());
+    }
+
+    @Test
+    public void productDestruction() {
+        DestructibleProduct product = (DestructibleProduct) InjectionProvider.instantiateAndInject(DestructibleProduct.class);
+        assertFalse(product.isDestroyed());
+        InjectionProvider.forgetAll();
+        assertTrue(product.isDestroyed());
     }
 
     @After
