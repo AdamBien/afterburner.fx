@@ -45,7 +45,7 @@ public abstract class FXMLView {
         this.loader.setControllerFactory(new Callback<Class<?>, Object>() {
             @Override
             public Object call(Class<?> p) {
-                return InjectionProvider.instantiateAndInject(p);
+                return InjectionProvider.instantiatePresenter(p);
             }
         });
         try {

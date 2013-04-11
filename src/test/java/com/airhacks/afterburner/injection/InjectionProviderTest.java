@@ -32,30 +32,30 @@ public class InjectionProviderTest {
 
     @Test
     public void injection() {
-        View view = (View) InjectionProvider.instantiateAndInject(View.class);
+        View view = (View) InjectionProvider.instantiatePresenter(View.class);
         Boundary boundary = view.getBoundary();
         assertNotNull(boundary);
         assertThat(boundary.getNumberOfInstances(), is(1));
-        AnotherView another = (AnotherView) InjectionProvider.instantiateAndInject(AnotherView.class);
+        AnotherView another = (AnotherView) InjectionProvider.instantiatePresenter(AnotherView.class);
         assertThat(boundary.getNumberOfInstances(), is(1));
     }
 
     @Test
-    public void singletonInstantiation() {
-        View first = (View) InjectionProvider.instantiateAndInject(View.class);
-        View second = (View) InjectionProvider.instantiateAndInject(View.class);
-        assertSame(first, second);
+    public void perInstanceInitialization() {
+        View first = (View) InjectionProvider.instantiatePresenter(View.class);
+        View second = (View) InjectionProvider.instantiatePresenter(View.class);
+        assertNotSame(first, second);
     }
 
     @Test
     public void productInitialization() {
-        InitializableProduct product = (InitializableProduct) InjectionProvider.instantiateAndInject(InitializableProduct.class);
+        InitializableProduct product = (InitializableProduct) InjectionProvider.instantiatePresenter(InitializableProduct.class);
         assertTrue(product.isInitialized());
     }
 
     @Test
     public void productDestruction() {
-        DestructibleProduct product = (DestructibleProduct) InjectionProvider.instantiateAndInject(DestructibleProduct.class);
+        DestructibleProduct product = (DestructibleProduct) InjectionProvider.instantiatePresenter(DestructibleProduct.class);
         assertFalse(product.isDestroyed());
         InjectionProvider.forgetAll();
         assertTrue(product.isDestroyed());

@@ -23,9 +23,13 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -36,21 +40,35 @@ import javax.inject.Inject;
  */
 public class InjectionProvider {
 
-    private static Map<Class, Object> providers = new HashMap<>();
+    private static Map<Class, Object> models = new HashMap<>();
+    private static List<Object> presenters = new ArrayList<>();
 
-    public static Object instantiateAndInject(Class clazz) {
-        Object product = providers.get(clazz);
+    public static Object instantiatePresenter(Class clazz) {
+        try {
+            Object product = injectAndInitialize(clazz.newInstance());
+            presenters.add(product);
+            return product;
+        } catch (InstantiationException | IllegalAccessException ex) {
+            throw new IllegalStateException("Cannot instantiate view: " + clazz, ex);
+        }
+    }
+
+    static Object instantiateModel(Class clazz) {
+        Object product = models.get(clazz);
         if (product == null) {
             try {
-                product = clazz.newInstance();
-                providers.put(clazz, product);
-                injectMembers(product);
-                initialize(product);
+                product = injectAndInitialize(clazz.newInstance());
+                models.put(clazz, product);
             } catch (InstantiationException | IllegalAccessException ex) {
-                throw new IllegalStateException("Cannot instantiate product: " + clazz, ex);
+                throw new IllegalStateException("Cannot instantiate view: " + clazz, ex);
             }
         }
+        return product;
+    }
 
+    static Object injectAndInitialize(Object product) {
+        injectMembers(product);
+        initialize(product);
         return product;
     }
 
@@ -60,7 +78,7 @@ public class InjectionProvider {
         for (Field field : fields) {
             if (field.isAnnotationPresent(Inject.class)) {
                 Class<?> type = field.getType();
-                Object target = instantiateAndInject(type);
+                Object target = instantiateModel(type);
                 try {
                     field.setAccessible(true);
                     field.set(instance, target);
@@ -95,10 +113,13 @@ public class InjectionProvider {
     }
 
     public static void forgetAll() {
-        Collection<Object> values = providers.values();
+        Collection<Object> values = models.values();
         for (Object object : values) {
             destroy(object);
         }
-        providers.clear();
+        for (Object object : presenters) {
+            destroy(object);
+        }
+        models.clear();
     }
 }
