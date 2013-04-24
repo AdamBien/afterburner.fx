@@ -21,12 +21,15 @@ package com.airhacks.afterburner.injection;
  */
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -76,7 +79,12 @@ public class InjectionProvider {
             if (field.isAnnotationPresent(Inject.class)) {
                 Class<?> type = field.getType();
                 Object target = instantiateModel(type);
-                PrivilegedSetFieldValue.setValue(field, instance, target);
+                try {
+                    field.setAccessible(true);
+                    field.set(instance, target);
+                } catch (IllegalArgumentException | IllegalAccessException ex) {
+                    throw new IllegalStateException("Cannot set field: " + field, ex);
+                }
             }
         }
     }
@@ -94,7 +102,12 @@ public class InjectionProvider {
         Method[] declaredMethods = aClass.getDeclaredMethods();
         for (Method method : declaredMethods) {
             if (method.isAnnotationPresent(annotationClass)) {
-                PrivilegedInvokeMethod.invoke(method, instance);
+                try {
+                    method.setAccessible(true);
+                    method.invoke(instance, new Object[]{});
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                    throw new IllegalStateException("Problem invoking " + annotationClass + " : " + method, ex);
+                }
             }
         }
     }
