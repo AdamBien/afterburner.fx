@@ -22,26 +22,35 @@ package com.airhacks.afterburner.views;
 
 import com.airhacks.afterburner.injection.InjectionProvider;
 import java.net.URL;
+import java.util.ResourceBundle;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.util.Callback;
 
 /**
  *
- * @author adam-bien.com
+ * @author
+ * adam-bien.com
  */
 public abstract class FXMLView {
 
     public static final String DEFAULT_ENDING = "view";
     protected FXMLLoader loader;
+    protected ResourceBundle resourceBundle;
 
     public FXMLView() {
+        this.init(getClass(), getFXMLName());
+    }
+
+    public FXMLView(ResourceBundle resourceBundle) {
+        this.resourceBundle = resourceBundle;
         this.init(getClass(), getFXMLName());
     }
 
     private void init(Class clazz, String conventionalName) {
         final URL resource = clazz.getResource(conventionalName);
         this.loader = new FXMLLoader(resource);
+        addResourceBundleIfAvailable();
         this.loader.setControllerFactory(new Callback<Class<?>, Object>() {
             @Override
             public Object call(Class<?> p) {
@@ -52,6 +61,12 @@ public abstract class FXMLView {
             loader.load();
         } catch (Exception ex) {
             throw new IllegalStateException("Cannot load " + conventionalName, ex);
+        }
+    }
+
+    void addResourceBundleIfAvailable() {
+        if (resourceBundle != null) {
+            this.loader.setResources(resourceBundle);
         }
     }
 
@@ -95,4 +110,8 @@ public abstract class FXMLView {
     final String getFXMLName() {
         return getConventionalName(".fxml");
     }
+
+    public ResourceBundle getResourceBundle() {
+        return resourceBundle;
+    } 
 }
