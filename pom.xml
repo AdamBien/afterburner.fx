@@ -13,7 +13,7 @@
     <organization>
         <name>Adam Bien</name>
         <url>http://adam-bien.com</url>
-    </organization>    
+    </organization>
     <inceptionYear>2013</inceptionYear>
 
     <licenses>
@@ -23,7 +23,6 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -59,20 +58,11 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>            
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.5.1</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.0</version>
+                <version>2.1</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -88,7 +78,29 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>            
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.4.1</version>
+                <configuration>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                </configuration>
+            </plugin>
         </plugins>
         <resources>
             <resource>
@@ -104,10 +116,18 @@
                     <include>**/*.xml</include>
                 </includes>
             </resource>
-        </resources>       
-        <finalName>afterburner</finalName> 
+        </resources>
+        <finalName>afterburner</finalName>
     </build>
+    <scm>
+        <connection>scm:git:git@github.com:AdamBien/afterburner.fx.git</connection>
+        <url>scm:git:git@github.com:AdamBien/afterburner.fx.git</url>
+        <developerConnection>scm:git:git@github.com:AdamBien/afterburner.fx.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 </project>
