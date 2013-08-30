@@ -1,2 +1,4 @@
 target/
 /dependency-reduced-pom.xml
+releaseAndUpload.sh
+uploadSnapshot.sh
