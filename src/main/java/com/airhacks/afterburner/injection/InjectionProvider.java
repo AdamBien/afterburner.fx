@@ -9,9 +9,9 @@ package com.airhacks.afterburner.injection;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -45,12 +45,24 @@ public class InjectionProvider {
 
     public static Object instantiatePresenter(Class clazz) {
         try {
-            Object product = injectAndInitialize(clazz.newInstance());
-            presenters.add(product);
+            Object product = registerExistingAndInject(clazz.newInstance());
             return product;
         } catch (InstantiationException | IllegalAccessException ex) {
             throw new IllegalStateException("Cannot instantiate view: " + clazz, ex);
         }
+    }
+
+    /**
+     * Caches the passed presenter internally and injects all fields internally
+     *
+     * @param instance An already existing (legacy) presenter interesting in
+     * injection
+     * @return presenter with injected fields
+     */
+    public static Object registerExistingAndInject(Object instance) {
+        Object product = injectAndInitialize(instance);
+        presenters.add(product);
+        return product;
     }
 
     static Object instantiateModel(Class clazz) {
