@@ -11,4 +11,12 @@ afterburner.fx provides:
 
 The use of afterburner.fx is demonstrated in [https://github.com/AdamBien/followme.fx](https://github.com/AdamBien/followme.fx)
 
+Afterburner is also available from maven central:
+```xml
+        <dependency>
+            <groupId>com.airhacks</groupId>
+            <artifactId>afterburner.fx</artifactId>
+            <version>1.0</version>
+        </dependency>
+```
 See also: [http://afterburner.adam-bien.com](http://afterburner.adam-bien.com)
