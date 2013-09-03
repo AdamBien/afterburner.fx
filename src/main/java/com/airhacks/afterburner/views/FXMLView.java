@@ -22,7 +22,10 @@ package com.airhacks.afterburner.views;
 
 import com.airhacks.afterburner.injection.InjectionProvider;
 import java.net.URL;
+
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.util.Callback;
 
@@ -59,6 +62,18 @@ public abstract class FXMLView {
         Parent parent = this.loader.getRoot();
         addCSSIfAvailable(parent);
         return parent;
+    }
+
+    /**
+     * Scene Builder creates for each FXML document a root container.
+     * This method omits the root container (e.g. AnchorPane) and gives you the access to its first child.
+     * @return the first child of the AnchorPane
+     */
+    public Node getViewWithoutRootContainer(){
+        final ObservableList<Node> children = getView().getChildrenUnmodifiable();
+        if(children.isEmpty())
+            return null;
+        return children.listIterator().next();
     }
 
     void addCSSIfAvailable(Parent parent) {
