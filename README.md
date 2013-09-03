@@ -19,4 +19,14 @@ Afterburner is also available from maven central:
             <version>1.0</version>
         </dependency>
 ```
+The current development version is available as snapshot:
+
+```xml
+        <dependency>
+            <groupId>com.airhacks</groupId>
+            <artifactId>afterburner.fx</artifactId>
+            <version>1.1-SNAPSHOT</version>
+        </dependency>
+```
+
 See also: [http://afterburner.adam-bien.com](http://afterburner.adam-bien.com)
