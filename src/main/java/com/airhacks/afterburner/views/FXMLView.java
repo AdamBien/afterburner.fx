@@ -21,7 +21,10 @@ package com.airhacks.afterburner.views;
  */
 
 import com.airhacks.afterburner.injection.InjectionProvider;
+
 import java.net.URL;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
@@ -29,8 +32,9 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.util.Callback;
 
+import static java.util.ResourceBundle.getBundle;
+
 /**
- *
  * @author adam-bien.com
  */
 public abstract class FXMLView {
@@ -44,7 +48,9 @@ public abstract class FXMLView {
 
     private void init(Class clazz, String conventionalName) {
         final URL resource = clazz.getResource(conventionalName);
-        this.loader = new FXMLLoader(resource);
+        String bundleName = getConventionalName();
+        ResourceBundle bundle = getResourceBundle(bundleName);
+        this.loader = new FXMLLoader(resource, bundle);
         this.loader.setControllerFactory(new Callback<Class<?>, Object>() {
             @Override
             public Object call(Class<?> p) {
@@ -65,14 +71,17 @@ public abstract class FXMLView {
     }
 
     /**
-     * Scene Builder creates for each FXML document a root container.
-     * This method omits the root container (e.g. AnchorPane) and gives you the access to its first child.
+     * Scene Builder creates for each FXML document a root container. This
+     * method omits the root container (e.g. AnchorPane) and gives you the
+     * access to its first child.
+     *
      * @return the first child of the AnchorPane
      */
-    public Node getViewWithoutRootContainer(){
+    public Node getViewWithoutRootContainer() {
         final ObservableList<Node> children = getView().getChildrenUnmodifiable();
-        if(children.isEmpty())
+        if (children.isEmpty()) {
             return null;
+        }
         return children.listIterator().next();
     }
 
@@ -95,8 +104,12 @@ public abstract class FXMLView {
     }
 
     String getConventionalName(String ending) {
+        return getConventionalName() + ending;
+    }
+
+    String getConventionalName() {
         String clazz = this.getClass().getSimpleName().toLowerCase();
-        return stripEnding(clazz) + ending;
+        return stripEnding(clazz);
     }
 
     static String stripEnding(String clazz) {
@@ -109,5 +122,14 @@ public abstract class FXMLView {
 
     final String getFXMLName() {
         return getConventionalName(".fxml");
+    }
+
+    static ResourceBundle getResourceBundle(String name) {
+        try {
+            return getBundle(name);
+        } catch (MissingResourceException ex) {
+            System.out.println(ex.getMessage());
+            return null;
+        }
     }
 }
