@@ -48,7 +48,7 @@ public abstract class FXMLView {
 
     private void init(Class clazz, String conventionalName) {
         final URL resource = clazz.getResource(conventionalName);
-        String bundleName = getConventionalName();
+        String bundleName = getBundleName();
         ResourceBundle bundle = getResourceBundle(bundleName);
         this.loader = new FXMLLoader(resource, bundle);
         this.loader.setControllerFactory(new Callback<Class<?>, Object>() {
@@ -110,6 +110,11 @@ public abstract class FXMLView {
     String getConventionalName() {
         String clazz = this.getClass().getSimpleName().toLowerCase();
         return stripEnding(clazz);
+    }
+
+    String getBundleName() {
+        String conventionalName = getConventionalName();
+        return this.getClass().getPackage().getName() + "." + conventionalName;
     }
 
     static String stripEnding(String clazz) {
