@@ -12,6 +12,14 @@ afterburner.fx provides:
 
 The use of afterburner.fx is demonstrated in [https://github.com/AdamBien/followme.fx](https://github.com/AdamBien/followme.fx)
 
+Jumpstart with:
+
+```shell
+mvn archetype:generate -Dfilter=com.airhacks:igniter
+```
+
+
+
 Afterburner is also available from maven central:
 ```xml
         <dependency>
