@@ -9,9 +9,9 @@ package com.airhacks.afterburner.injection;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -48,6 +48,22 @@ public class InjectionProviderTest {
     public void perInstanceInitialization() {
         View first = (View) InjectionProvider.instantiatePresenter(View.class);
         View second = (View) InjectionProvider.instantiatePresenter(View.class);
+        assertNotSame(first, second);
+    }
+
+    @Test
+    public void forgetAllPresenters() {
+        Presenter first = (Presenter) InjectionProvider.instantiatePresenter(Presenter.class);
+        InjectionProvider.forgetAll();
+        Presenter second = (Presenter) InjectionProvider.instantiatePresenter(Presenter.class);
+        assertNotSame(first, second);
+    }
+
+    @Test
+    public void forgetAllModels() {
+        Model first = (Model) InjectionProvider.instantiateModel(Model.class);
+        InjectionProvider.forgetAll();
+        Model second = (Model) InjectionProvider.instantiateModel(Model.class);
         assertNotSame(first, second);
     }
 
