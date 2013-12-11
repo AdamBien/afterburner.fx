@@ -9,9 +9,9 @@ package com.airhacks.afterburner.injection;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,8 +40,8 @@ import javax.inject.Inject;
  */
 public class InjectionProvider {
 
-    private static Map<Class, Object> models = new HashMap<>();
-    private static List<Object> presenters = new ArrayList<>();
+    private static final Map<Class, Object> models = new HashMap<>();
+    private static final List<Object> presenters = new ArrayList<>();
 
     public static Object instantiatePresenter(Class clazz) {
         try {
@@ -90,24 +90,36 @@ public class InjectionProvider {
         for (final Field field : fields) {
             if (field.isAnnotationPresent(Inject.class)) {
                 Class<?> type = field.getType();
-                final Object target = instantiateModel(type);
-                AccessController.doPrivileged(new PrivilegedAction() {
-                    @Override
-                    public Object run() {
-                        boolean wasAccessible = field.isAccessible();
-                        try {
-                            field.setAccessible(true);
-                            field.set(instance, target);
-                            return null; // return nothing...
-                        } catch (IllegalArgumentException | IllegalAccessException ex) {
-                            throw new IllegalStateException("Cannot set field: " + field, ex);
-                        } finally {
-                            field.setAccessible(wasAccessible);
-                        }
-                    }
-                });
+                if (type.isAssignableFrom(String.class)) {
+                    String key = field.getName();
+                    String value = System.getProperty(key);
+                    System.out.println("KEy: " + key + " value " + value);
+                    injectIntoField(field, instance, value);
+
+                } else {
+                    final Object target = instantiateModel(type);
+                    injectIntoField(field, instance, target);
+                }
             }
         }
+    }
+
+    static void injectIntoField(final Field field, final Object instance, final Object target) {
+        AccessController.doPrivileged(new PrivilegedAction() {
+            @Override
+            public Object run() {
+                boolean wasAccessible = field.isAccessible();
+                try {
+                    field.setAccessible(true);
+                    field.set(instance, target);
+                    return null; // return nothing...
+                } catch (IllegalArgumentException | IllegalAccessException ex) {
+                    throw new IllegalStateException("Cannot set field: " + field, ex);
+                } finally {
+                    field.setAccessible(wasAccessible);
+                }
+            }
+        });
     }
 
     static void initialize(Object instance) {
