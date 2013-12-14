@@ -10,8 +10,6 @@ afterburner.fx provides:
 3. Conventional resource bundle loading.
 4. Afterburner is a "Just-Enough-Framework" extracted from [airhacks-control](https://github.com/AdamBien/airhacks-control) and used in [airpad](https://github.com/AdamBien/airpad) applications
 
-The use of afterburner.fx is demonstrated in [https://github.com/AdamBien/followme.fx](https://github.com/AdamBien/followme.fx)
-
 Jumpstart with:
 
 ```shell
@@ -39,3 +37,4 @@ The current development version is available as snapshot:
 ```
 
 See also: [http://afterburner.adam-bien.com](http://afterburner.adam-bien.com)
+Sample application:  [https://github.com/AdamBien/followme.fx](https://github.com/AdamBien/followme.fx)
