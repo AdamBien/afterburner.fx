@@ -37,4 +37,5 @@ The current development version is available as snapshot:
 ```
 
 See also: [http://afterburner.adam-bien.com](http://afterburner.adam-bien.com)
+
 Sample application:  [https://github.com/AdamBien/followme.fx](https://github.com/AdamBien/followme.fx)
