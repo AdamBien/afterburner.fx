@@ -151,6 +151,15 @@
                 <includes>
                     <include>**/*.fxml</include>
                     <include>**/*.css</include>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/test/java</directory>
+                <includes>
+                    <include>**/*.fxml</include>
+                    <include>**/*.css</include>
+                    <include>**/*.properties</include>
                 </includes>
             </resource>
             <resource>

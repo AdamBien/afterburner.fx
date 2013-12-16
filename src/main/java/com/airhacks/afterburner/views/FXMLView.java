@@ -19,27 +19,23 @@ package com.airhacks.afterburner.views;
  * limitations under the License.
  * #L%
  */
-
 import com.airhacks.afterburner.injection.InjectionProvider;
-
 import java.net.URL;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-
+import static java.util.ResourceBundle.getBundle;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.util.Callback;
 
-import static java.util.ResourceBundle.getBundle;
-
 /**
  * @author adam-bien.com
  */
 public abstract class FXMLView {
 
-    public static final String DEFAULT_ENDING = "view";
+    public final static String DEFAULT_ENDING = "view";
     protected FXMLLoader loader;
 
     public FXMLView() {
