@@ -8,7 +8,9 @@ afterburner.fx provides:
 1. "Zero-Configuration" javax.inject.Inject DI of models and services
 2. Convention-based unification of presenter, view, FXML and css.
 3. Conventional resource bundle loading.
-4. Afterburner is a "Just-Enough-Framework" extracted from [airhacks-control](https://github.com/AdamBien/airhacks-control) and used in [airpad](https://github.com/AdamBien/airpad) and [lightfish](https://github.com/AdamBien/lightfish) applications
+4. Injection of System.getProperties into presenter,
+5. Injection of presenter-local configuration properties into presenter.
+6. Afterburner is a "Just-Enough-Framework" extracted from [airhacks-control](https://github.com/AdamBien/airhacks-control) and used in [airpad](https://github.com/AdamBien/airpad) and [lightfish](https://github.com/AdamBien/lightfish) applications
 
 Jumpstart with:
 
