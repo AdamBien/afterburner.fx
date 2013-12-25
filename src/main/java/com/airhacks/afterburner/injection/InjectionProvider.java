@@ -45,7 +45,7 @@ public class InjectionProvider {
 
     public final static String CONFIGURATION_FILE = "configuration.properties";
 
-    private static final Map<Class, Object> models = new HashMap<>();
+    private static final Map<Class, Object> modelsAndServices = new HashMap<>();
     private static final List<Object> presenters = new ArrayList<>();
 
     public static Object instantiatePresenter(Class clazz) {
@@ -70,12 +70,12 @@ public class InjectionProvider {
         return product;
     }
 
-    public static Object instantiateModel(Class clazz) {
-        Object product = models.get(clazz);
+    public static Object instantiateModelOrService(Class clazz) {
+        Object product = modelsAndServices.get(clazz);
         if (product == null) {
             try {
                 product = injectAndInitialize(clazz.newInstance());
-                models.put(clazz, product);
+                modelsAndServices.put(clazz, product);
             } catch (InstantiationException | IllegalAccessException ex) {
                 throw new IllegalStateException("Cannot instantiate view: " + clazz, ex);
             }
@@ -113,6 +113,10 @@ public class InjectionProvider {
 
     static void injectMembers(final Object instance) {
         Class<? extends Object> clazz = instance.getClass();
+        injectMembers(clazz, instance);
+    }
+
+    public static void injectMembers(Class<? extends Object> clazz, final Object instance) throws SecurityException {
         Field[] fields = clazz.getDeclaredFields();
         for (final Field field : fields) {
             if (field.isAnnotationPresent(Inject.class)) {
@@ -128,10 +132,14 @@ public class InjectionProvider {
                     System.out.println("Key: " + key + " value " + value);
                     injectIntoField(field, instance, value);
                 } else {
-                    final Object target = instantiateModel(type);
+                    final Object target = instantiateModelOrService(type);
                     injectIntoField(field, instance, target);
                 }
             }
+        }
+        Class<? extends Object> superclass = clazz.getSuperclass();
+        if (superclass != null) {
+            injectMembers(superclass, instance);
         }
     }
 
@@ -184,14 +192,13 @@ public class InjectionProvider {
             }
         }
         Class superclass = clazz.getSuperclass();
-        if (superclass == null) {
-            return;
+        if (superclass != null) {
+            invokeMethodWithAnnotation(superclass, instance, annotationClass);
         }
-        invokeMethodWithAnnotation(superclass, instance, annotationClass);
     }
 
     public static void forgetAll() {
-        Collection<Object> values = models.values();
+        Collection<Object> values = modelsAndServices.values();
         for (Object object : values) {
             destroy(object);
         }
@@ -199,6 +206,6 @@ public class InjectionProvider {
             destroy(object);
         }
         presenters.clear();
-        models.clear();
+        modelsAndServices.clear();
     }
 }

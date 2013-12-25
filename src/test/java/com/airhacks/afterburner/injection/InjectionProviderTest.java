@@ -62,9 +62,9 @@ public class InjectionProviderTest {
 
     @Test
     public void forgetAllModels() {
-        Model first = (Model) InjectionProvider.instantiateModel(Model.class);
+        Model first = (Model) InjectionProvider.instantiateModelOrService(Model.class);
         InjectionProvider.forgetAll();
-        Model second = (Model) InjectionProvider.instantiateModel(Model.class);
+        Model second = (Model) InjectionProvider.instantiateModelOrService(Model.class);
         assertNotSame(first, second);
     }
 
