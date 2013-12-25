@@ -154,16 +154,17 @@ public class InjectionProvider {
     }
 
     static void initialize(Object instance) {
-        invokeMethodWithAnnotation(instance, PostConstruct.class);
+        Class<? extends Object> clazz = instance.getClass();
+        invokeMethodWithAnnotation(clazz, instance, PostConstruct.class);
     }
 
     static void destroy(Object instance) {
-        invokeMethodWithAnnotation(instance, PreDestroy.class);
+        Class<? extends Object> clazz = instance.getClass();
+        invokeMethodWithAnnotation(clazz, instance, PreDestroy.class);
     }
 
-    static void invokeMethodWithAnnotation(final Object instance, final Class<? extends Annotation> annotationClass) throws IllegalStateException, SecurityException {
-        Class<? extends Object> aClass = instance.getClass();
-        Method[] declaredMethods = aClass.getDeclaredMethods();
+    static void invokeMethodWithAnnotation(Class clazz, final Object instance, final Class<? extends Annotation> annotationClass) throws IllegalStateException, SecurityException {
+        Method[] declaredMethods = clazz.getDeclaredMethods();
         for (final Method method : declaredMethods) {
             if (method.isAnnotationPresent(annotationClass)) {
                 AccessController.doPrivileged(new PrivilegedAction() {
@@ -182,6 +183,11 @@ public class InjectionProvider {
                 });
             }
         }
+        Class superclass = clazz.getSuperclass();
+        if (superclass == null) {
+            return;
+        }
+        invokeMethodWithAnnotation(superclass, instance, annotationClass);
     }
 
     public static void forgetAll() {
