@@ -1,7 +1,7 @@
 afterburner.fx
 ==============
 
-The opinionated just-enough-framework (2 classes) MVP for JavaFX
+The opinionated just-enough MVP framework (2 classes) for JavaFX
 
 afterburner.fx provides:
 
