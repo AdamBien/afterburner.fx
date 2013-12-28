@@ -34,7 +34,7 @@ The current development version is available as snapshot:
         <dependency>
             <groupId>com.airhacks</groupId>
             <artifactId>afterburner.fx</artifactId>
-            <version>1.5-SNAPSHOT</version>
+            <version>1.4.2-SNAPSHOT</version>
         </dependency>
 ```
 
