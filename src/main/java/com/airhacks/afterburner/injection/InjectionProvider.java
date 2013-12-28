@@ -123,14 +123,17 @@ public class InjectionProvider {
                 Class<?> type = field.getType();
                 if (type.isAssignableFrom(String.class)) {
                     String key = field.getName();
-                    String value = System.getProperty(key);
-                    System.out.println("System property: " + key + " " + value);
-                    String configuration = getProperty(clazz, key);
-                    if (configuration != null) {
-                        value = configuration;
+                    String systemProperty = System.getProperty(key);
+                    String resultingValue;
+                    System.out.println("System property: " + key + " " + systemProperty);
+
+                    if (systemProperty != null) {
+                        resultingValue = systemProperty;
+                    } else {
+                        resultingValue = getProperty(clazz, key);
                     }
-                    System.out.println("Key: " + key + " value " + value);
-                    injectIntoField(field, instance, value);
+                    System.out.println("Key: " + key + " value " + resultingValue);
+                    injectIntoField(field, instance, resultingValue);
                 } else {
                     final Object target = instantiateModelOrService(type);
                     injectIntoField(field, instance, target);

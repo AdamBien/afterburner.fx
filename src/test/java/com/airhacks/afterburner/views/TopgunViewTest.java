@@ -48,10 +48,12 @@ package com.airhacks.afterburner.views;
  * limitations under the License.
  * #L%
  */
+import com.airhacks.afterburner.injection.InjectionProvider;
 import com.airhacks.afterburner.topgun.TopgunPresenter;
 import com.airhacks.afterburner.topgun.TopgunView;
 import javafx.scene.Parent;
 import static org.hamcrest.CoreMatchers.is;
+import org.junit.After;
 import org.junit.Assert;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -83,6 +85,17 @@ public class TopgunViewTest {
     }
 
     @Test
+    public void systemPropertyOverridesConfigurationProperties() {
+        final String expected = "ivory tower";
+        System.setProperty("host", expected);
+        TopgunView newView = new TopgunView();
+        TopgunPresenter newPresenter = (TopgunPresenter) newView.getPresenter();
+        String actual = newPresenter.getHost();
+        Assert.assertNotNull(actual);
+        assertThat(actual, is(expected));
+    }
+
+    @Test
     public void getView() {
         Parent parent = this.view.getView();
         assertNotNull(parent);
@@ -98,6 +111,12 @@ public class TopgunViewTest {
     public void getPresengetViewWithoutRootContainerter() {
         Object object = this.view.getViewWithoutRootContainer();
         assertNotNull(object);
+    }
+
+    @After
+    public void cleanUp() {
+        InjectionProvider.forgetAll();
+        System.clearProperty("host");
     }
 
 }
