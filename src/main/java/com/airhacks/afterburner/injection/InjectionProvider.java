@@ -9,9 +9,9 @@ package com.airhacks.afterburner.injection;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -102,7 +102,7 @@ public class InjectionProvider {
             }
             configuration.load(stream);
         } catch (IOException ex) {
-            System.out.println("Propeties not found: " + ex);
+            //a property file does not have to exist...
         }
         return configuration;
     }
@@ -129,14 +129,11 @@ public class InjectionProvider {
                     String key = field.getName();
                     String systemProperty = System.getProperty(key);
                     String resultingValue;
-                    System.out.println("System property: " + key + " " + systemProperty);
-
                     if (systemProperty != null) {
                         resultingValue = systemProperty;
                     } else {
                         resultingValue = getProperty(clazz, key);
                     }
-                    System.out.println("Key: " + key + " value " + resultingValue);
                     injectIntoField(field, instance, resultingValue);
                 } else {
                     final Object target = instantiateModelOrService(type);
