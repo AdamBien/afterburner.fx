@@ -75,12 +75,16 @@ public class InjectionProvider {
         if (product == null) {
             try {
                 product = injectAndInitialize(clazz.newInstance());
-                modelsAndServices.put(clazz, product);
+                modelsAndServices.putIfAbsent(clazz, product);
             } catch (InstantiationException | IllegalAccessException ex) {
                 throw new IllegalStateException("Cannot instantiate view: " + clazz, ex);
             }
         }
         return product;
+    }
+
+    public static void setModelOrService(Class clazz, Object instance) {
+        modelsAndServices.put(clazz, instance);
     }
 
     static Object injectAndInitialize(Object product) {

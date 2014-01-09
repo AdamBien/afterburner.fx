@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Adam Bien.
+ * Copyright 2014 Adam Bien.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package com.airhacks.afterburner.topgun;
  * #%L
  * afterburner.fx
  * %%
- * Copyright (C) 2013 Adam Bien
+ * Copyright (C) 2013 - 2014 Adam Bien
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,38 +34,15 @@ package com.airhacks.afterburner.topgun;
  * limitations under the License.
  * #L%
  */
-import java.net.URL;
-import java.util.ResourceBundle;
-import javafx.fxml.Initializable;
-import javax.inject.Inject;
 
 /**
- * FXML Controller class
  *
  * @author adam-bien.com
  */
-public class TopgunPresenter implements Initializable {
+public class GunService {
 
-    @Inject
-    private String host;
-
-    @Inject
-    GunService gs;
-
-    /**
-     * Initializes the controller class.
-     */
-    @Override
-    public void initialize(URL url, ResourceBundle rb) {
-        System.out.println("Host: " + host);
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public String getMessageFromGun() {
-        return gs.fireAndForget();
+    public String fireAndForget() {
+        return "Fired and forgot!";
     }
 
 }
