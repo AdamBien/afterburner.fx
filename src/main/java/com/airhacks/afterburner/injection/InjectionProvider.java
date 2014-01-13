@@ -95,8 +95,7 @@ public class InjectionProvider {
 
     static Properties getProperties(Class clazz) {
         Properties configuration = new Properties();
-        try {
-            final InputStream stream = clazz.getResourceAsStream(CONFIGURATION_FILE);
+        try (InputStream stream = clazz.getResourceAsStream(CONFIGURATION_FILE)) {
             if (stream == null) {
                 return null;
             }
