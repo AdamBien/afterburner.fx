@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -63,18 +64,30 @@ public abstract class FXMLView {
         this.lazyLoader = (Future<FXMLLoader>) THREAD_POOL.submit(initialization);
     }
 
-    FXMLLoader loadAsynchronously(final URL resource, ResourceBundle bundle, String conventionalName) throws IllegalStateException {
-        FXMLLoader loader = new FXMLLoader(resource, bundle);
+    FXMLLoader loadAsynchronously(final URL resource, ResourceBundle bundle, final String conventionalName) throws IllegalStateException {
+        final FXMLLoader loader = new FXMLLoader(resource, bundle);
         loader.setControllerFactory(new Callback<Class<?>, Object>() {
             @Override
             public Object call(Class<?> p) {
                 return InjectionProvider.instantiatePresenter(p);
             }
         });
-        try {
-            loader.load();
-        } catch (IOException ex) {
-            throw new IllegalStateException("Cannot load " + conventionalName, ex);
+        final Runnable runnable = new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    loader.load();
+                } catch (IOException ex) {
+                    throw new IllegalStateException("Cannot load " + conventionalName, ex);
+                }
+            }
+        };
+
+        if (Platform.isFxApplicationThread()) {
+            Platform.runLater(runnable);
+        } else {
+            runnable.run();
         }
         return loader;
     }
