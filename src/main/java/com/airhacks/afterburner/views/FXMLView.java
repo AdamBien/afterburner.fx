@@ -45,6 +45,7 @@ public abstract class FXMLView {
     public final static String DEFAULT_ENDING = "view";
     protected Future<FXMLLoader> lazyLoader;
     private static final ExecutorService THREAD_POOL = Executors.newCachedThreadPool();
+    private ResourceBundle bundle;
 
     public FXMLView() {
         this.init(getClass(), getFXMLName());
@@ -53,7 +54,7 @@ public abstract class FXMLView {
     private void init(Class clazz, final String conventionalName) {
         final URL resource = clazz.getResource(conventionalName);
         String bundleName = getBundleName();
-        final ResourceBundle bundle = getResourceBundle(bundleName);
+        this.bundle = getResourceBundle(bundleName);
         Callable<FXMLLoader> initialization = new Callable<FXMLLoader>() {
 
             @Override
@@ -156,12 +157,20 @@ public abstract class FXMLView {
         return getConventionalName(".fxml");
     }
 
-    static ResourceBundle getResourceBundle(String name) {
+    public static ResourceBundle getResourceBundle(String name) {
         try {
             return getBundle(name);
         } catch (MissingResourceException ex) {
             return null;
         }
+    }
+
+    /**
+     *
+     * @return an existing resource bundle, or null
+     */
+    public ResourceBundle getResourceBundle() {
+        return this.bundle;
     }
 
     FXMLLoader getLoader() {

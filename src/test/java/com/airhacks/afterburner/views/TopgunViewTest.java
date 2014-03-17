@@ -51,6 +51,7 @@ package com.airhacks.afterburner.views;
 import com.airhacks.afterburner.injection.InjectionProvider;
 import com.airhacks.afterburner.topgun.TopgunPresenter;
 import com.airhacks.afterburner.topgun.TopgunView;
+import java.util.ResourceBundle;
 import javafx.scene.Parent;
 import static org.hamcrest.CoreMatchers.is;
 import org.junit.After;
@@ -82,6 +83,12 @@ public class TopgunViewTest {
         Assert.assertNotNull(host);
         final String expected = "tower"; //from configuration.properties
         assertThat(host, is(expected));
+    }
+
+    @Test
+    public void loadResourceBundle() {
+        ResourceBundle resourceBundle = this.view.getResourceBundle();
+        assertNotNull(resourceBundle);
     }
 
     @Test
