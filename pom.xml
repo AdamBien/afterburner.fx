@@ -7,7 +7,7 @@
     </parent>
     <groupId>com.airhacks</groupId>
     <artifactId>afterburner.fx</artifactId>
-    <version>1.4.2-SNAPSHOT</version>
+    <version>1.4.2</version>
     <packaging>jar</packaging>
 
     <name>afterburner.fx</name>
@@ -175,7 +175,7 @@
         <connection>scm:git:git@github.com:AdamBien/afterburner.fx.git</connection>
         <url>scm:git:git@github.com:AdamBien/afterburner.fx.git</url>
         <developerConnection>scm:git:git@github.com:AdamBien/afterburner.fx.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>v1.4.2</tag>
     </scm>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
