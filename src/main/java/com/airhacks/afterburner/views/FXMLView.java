@@ -9,9 +9,9 @@ package com.airhacks.afterburner.views;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,6 +30,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -44,7 +47,7 @@ import javafx.util.Callback;
 public abstract class FXMLView {
 
     public final static String DEFAULT_ENDING = "view";
-    protected Future<FXMLLoader> lazyLoader;
+    protected FXMLLoader fxmlLoader;
     private static final ExecutorService THREAD_POOL = Executors.newCachedThreadPool();
     private ResourceBundle bundle;
 
@@ -56,17 +59,10 @@ public abstract class FXMLView {
         final URL resource = clazz.getResource(conventionalName);
         String bundleName = getBundleName();
         this.bundle = getResourceBundle(bundleName);
-        Callable<FXMLLoader> initialization = new Callable<FXMLLoader>() {
-
-            @Override
-            public FXMLLoader call() throws Exception {
-                return loadAsynchronously(resource, bundle, conventionalName);
-            }
-        };
-        this.lazyLoader = (Future<FXMLLoader>) THREAD_POOL.submit(initialization);
+        this.fxmlLoader = loadSynchronously(resource, bundle, conventionalName);
     }
 
-    FXMLLoader loadAsynchronously(final URL resource, ResourceBundle bundle, final String conventionalName) throws IllegalStateException {
+    FXMLLoader loadSynchronously(final URL resource, ResourceBundle bundle, final String conventionalName) throws IllegalStateException {
         final FXMLLoader loader = new FXMLLoader(resource, bundle);
         loader.setControllerFactory(new Callback<Class<?>, Object>() {
             @Override
@@ -74,22 +70,10 @@ public abstract class FXMLView {
                 return InjectionProvider.instantiatePresenter(p);
             }
         });
-        final Runnable runnable = new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    loader.load();
-                } catch (IOException ex) {
-                    throw new IllegalStateException("Cannot load " + conventionalName, ex);
-                }
-            }
-        };
         try {
-            Platform.runLater(runnable);
-        } catch (IllegalStateException ex) {
-            //can only happen in a headless unit test
-            runnable.run();
+            loader.load();
+        } catch (IOException ex) {
+            throw new IllegalStateException("Cannot load " + conventionalName, ex);
         }
         return loader;
     }
@@ -175,10 +159,6 @@ public abstract class FXMLView {
     }
 
     FXMLLoader getLoader() {
-        try {
-            return this.lazyLoader.get();
-        } catch (InterruptedException | ExecutionException ex) {
-            throw new IllegalStateException("Initialization problem", ex);
-        }
+        return this.fxmlLoader;
     }
 }
