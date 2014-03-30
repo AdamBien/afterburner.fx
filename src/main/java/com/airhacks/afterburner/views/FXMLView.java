@@ -168,7 +168,7 @@ public abstract class FXMLView {
         String styleSheetName = getStyleSheetName();
         URL uri = getClass().getResource(styleSheetName);
         if (uri == null) {
-            log.info("Could not find " + styleSheetName);
+            log.fine("Could not find " + styleSheetName);
             return;
         }
         String uriToCss = uri.toExternalForm();
@@ -271,7 +271,7 @@ public abstract class FXMLView {
         try {
             return getBundle(name);
         } catch (MissingResourceException ex) {
-            log.info("Was not able to find resource bundle: " + name);
+            log.fine("Was not able to find resource bundle: " + name);
             return null;
         }
     }
