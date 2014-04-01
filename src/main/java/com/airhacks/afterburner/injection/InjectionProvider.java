@@ -51,6 +51,7 @@ public class InjectionProvider {
     public static Object instantiatePresenter(Class clazz) {
         try {
             Object product = registerExistingAndInject(clazz.newInstance());
+            setModelOrService(product.getClass(), product);
             return product;
         } catch (InstantiationException | IllegalAccessException ex) {
             throw new IllegalStateException("Cannot instantiate view: " + clazz, ex);
