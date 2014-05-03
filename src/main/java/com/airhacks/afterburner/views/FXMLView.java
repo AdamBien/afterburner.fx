@@ -46,9 +46,13 @@ import javafx.util.Callback;
  */
 public abstract class FXMLView {
 
+    private static final Logger log = Logger
+            .getLogger(FXMLView.class.getName());
+
     public final static String DEFAULT_ENDING = "view";
     protected FXMLLoader fxmlLoader;
-    private static final ExecutorService THREAD_POOL = Executors.newCachedThreadPool();
+    private static final ExecutorService THREAD_POOL = Executors
+            .newCachedThreadPool();
     private ResourceBundle bundle;
 
     public FXMLView() {
@@ -62,7 +66,8 @@ public abstract class FXMLView {
         this.fxmlLoader = loadSynchronously(resource, bundle, conventionalName);
     }
 
-    FXMLLoader loadSynchronously(final URL resource, ResourceBundle bundle, final String conventionalName) throws IllegalStateException {
+    FXMLLoader loadSynchronously(final URL resource, ResourceBundle bundle,
+            final String conventionalName) throws IllegalStateException {
         final FXMLLoader loader = new FXMLLoader(resource, bundle);
         loader.setControllerFactory(new Callback<Class<?>, Object>() {
             @Override
@@ -73,7 +78,8 @@ public abstract class FXMLView {
         try {
             loader.load();
         } catch (IOException ex) {
-            throw new IllegalStateException("Cannot load " + conventionalName, ex);
+            throw new IllegalStateException("Cannot load " + conventionalName,
+                    ex);
         }
         return loader;
     }
@@ -88,11 +94,12 @@ public abstract class FXMLView {
      * Scene Builder creates for each FXML document a root container. This
      * method omits the root container (e.g. AnchorPane) and gives you the
      * access to its first child.
-     *
+     * 
      * @return the first child of the AnchorPane
      */
     public Node getViewWithoutRootContainer() {
-        final ObservableList<Node> children = getView().getChildrenUnmodifiable();
+        final ObservableList<Node> children = getView()
+                .getChildrenUnmodifiable();
         if (children.isEmpty()) {
             return null;
         }
@@ -151,7 +158,7 @@ public abstract class FXMLView {
     }
 
     /**
-     *
+     * 
      * @return an existing resource bundle, or null
      */
     public ResourceBundle getResourceBundle() {
@@ -160,5 +167,36 @@ public abstract class FXMLView {
 
     FXMLLoader getLoader() {
         return this.fxmlLoader;
+    }
+
+    /**
+     * This static method returns a view for a corresponding presenter.
+     * 
+     * @param clazz
+     *            the class we want to create a view for
+     */
+    public static FXMLView getViewForPresenterClass(Class<?> clazz) {
+        if (clazz == null) {
+            throw new IllegalArgumentException("clazz for presenter is null");
+        }
+        if (!clazz.getSimpleName().matches(".*Presenter$")) {
+            throw new IllegalArgumentException(
+                    "Preseneter class name must end in Presenter but is: "
+                            + clazz.getSimpleName());
+        }
+        String classNameForPresenter = clazz.getPackage().getName() + "."
+                + clazz.getSimpleName().replaceAll("Presenter$", "View");
+        try {
+            return (FXMLView) Class.forName(classNameForPresenter)
+                    .newInstance();
+        } catch (InstantiationException e) {
+            log.log(Level.WARNING, "Exception was thrown", e);
+        } catch (IllegalAccessException e) {
+            log.log(Level.WARNING, "Exception was thrown", e);
+        } catch (ClassNotFoundException e) {
+            log.log(Level.WARNING, "Presenter for view does not exists."
+                    + classNameForPresenter, e);
+        }
+        return null;
     }
 }

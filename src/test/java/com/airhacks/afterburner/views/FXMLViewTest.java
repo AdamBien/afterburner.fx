@@ -34,13 +34,19 @@ package com.airhacks.afterburner.views;
  * limitations under the License.
  * #L%
  */
-import junit.framework.Assert;
-import org.junit.Test;
-
 import java.util.ResourceBundle;
 
+import org.junit.Test;
+
+import com.airhacks.afterburner.topgun.TopgunPresenter;
+import com.airhacks.afterburner.topgun.TopgunView;
+import com.airhacks.afterburner.wrong.NoViewPresenter;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 /**
- *
+ * 
  * @author adam-bien.com
  */
 public class FXMLViewTest {
@@ -48,7 +54,30 @@ public class FXMLViewTest {
     @Test
     public void loadNonExistingBundle() {
         ResourceBundle loaded = FXMLView.getResourceBundle("non-existing");
-        Assert.assertNull(loaded);
+        assertNull(loaded);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetViewForPresenterClassNullArgument() {
+        FXMLView.getViewForPresenterClass(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetViewForPresenterClassWrongNaming() {
+        FXMLView.getViewForPresenterClass(String.class);
+    }
+
+    @Test
+    public void testGetViewForPresenterClassNoView() {
+        FXMLView noView = FXMLView
+                .getViewForPresenterClass(NoViewPresenter.class);
+        assertNull(noView);
+    }
+
+    @Test
+    public void testGetViewForPresenter() {
+        TopgunView topgunView = (TopgunView) FXMLView
+                .getViewForPresenterClass(TopgunPresenter.class);
+        assertNotNull(topgunView);
+    }
 }
