@@ -27,12 +27,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.WeakHashMap;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -45,8 +45,8 @@ public class InjectionProvider {
 
     public final static String CONFIGURATION_FILE = "configuration.properties";
 
-    private static final Map<Class, Object> modelsAndServices = new HashMap<>();
-    private static final List<Object> presenters = new ArrayList<>();
+    private static final Map<Class, Object> modelsAndServices = new WeakHashMap<>();
+    private static final Set<Object> presenters = Collections.newSetFromMap(new WeakHashMap<>());
 
     public static Object instantiatePresenter(Class clazz) {
         try {
