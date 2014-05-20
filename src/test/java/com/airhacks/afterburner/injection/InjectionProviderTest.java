@@ -19,6 +19,7 @@ package com.airhacks.afterburner.injection;
  * limitations under the License.
  * #L%
  */
+import java.util.function.Function;
 import static org.hamcrest.CoreMatchers.is;
 import org.junit.After;
 import static org.junit.Assert.assertFalse;
@@ -28,6 +29,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
  *
@@ -66,6 +68,15 @@ public class InjectionProviderTest {
         InjectionProvider.forgetAll();
         Model second = (Model) InjectionProvider.instantiateModelOrService(Model.class);
         assertNotSame(first, second);
+    }
+
+    @Test
+    public void setInstanceSupplier() {
+        Function<Class, Object> provider = t -> Mockito.mock(t);
+        InjectionProvider.setInstanceSupplier(provider);
+        Object mock = InjectionProvider.instantiateModelOrService(Model.class);
+        assertTrue(mock.getClass().getName().contains("ByMockito"));
+        InjectionProvider.resetInstanceSupplier();
     }
 
     @Test
