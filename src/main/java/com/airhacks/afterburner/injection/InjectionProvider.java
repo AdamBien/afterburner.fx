@@ -9,9 +9,9 @@ package com.airhacks.afterburner.injection;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -50,8 +50,7 @@ public class InjectionProvider {
 
     public static Object instantiatePresenter(Class clazz) {
         try {
-            Object product = registerExistingAndInject(clazz.newInstance());
-            return product;
+            return registerExistingAndInject(clazz.newInstance());
         } catch (InstantiationException | IllegalAccessException ex) {
             throw new IllegalStateException("Cannot instantiate view: " + clazz, ex);
         }
@@ -75,9 +74,7 @@ public class InjectionProvider {
         if (product == null) {
             try {
                 product = injectAndInitialize(clazz.newInstance());
-                if (!modelsAndServices.containsKey(clazz)) {
-                    modelsAndServices.put(clazz, product);
-                }
+                modelsAndServices.putIfAbsent(clazz, product);
             } catch (InstantiationException | IllegalAccessException ex) {
                 throw new IllegalStateException("Cannot instantiate view: " + clazz, ex);
             }
@@ -149,19 +146,16 @@ public class InjectionProvider {
     }
 
     static void injectIntoField(final Field field, final Object instance, final Object target) {
-        AccessController.doPrivileged(new PrivilegedAction() {
-            @Override
-            public Object run() {
-                boolean wasAccessible = field.isAccessible();
-                try {
-                    field.setAccessible(true);
-                    field.set(instance, target);
-                    return null; // return nothing...
-                } catch (IllegalArgumentException | IllegalAccessException ex) {
-                    throw new IllegalStateException("Cannot set field: " + field, ex);
-                } finally {
-                    field.setAccessible(wasAccessible);
-                }
+        AccessController.doPrivileged((PrivilegedAction) () -> {
+            boolean wasAccessible = field.isAccessible();
+            try {
+                field.setAccessible(true);
+                field.set(instance, target);
+                return null; // return nothing...
+            } catch (IllegalArgumentException | IllegalAccessException ex) {
+                throw new IllegalStateException("Cannot set field: " + field, ex);
+            } finally {
+                field.setAccessible(wasAccessible);
             }
         });
     }
@@ -180,18 +174,15 @@ public class InjectionProvider {
         Method[] declaredMethods = clazz.getDeclaredMethods();
         for (final Method method : declaredMethods) {
             if (method.isAnnotationPresent(annotationClass)) {
-                AccessController.doPrivileged(new PrivilegedAction() {
-                    @Override
-                    public Object run() {
-                        boolean wasAccessible = method.isAccessible();
-                        try {
-                            method.setAccessible(true);
-                            return method.invoke(instance, new Object[]{});
-                        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                            throw new IllegalStateException("Problem invoking " + annotationClass + " : " + method, ex);
-                        } finally {
-                            method.setAccessible(wasAccessible);
-                        }
+                AccessController.doPrivileged((PrivilegedAction) () -> {
+                    boolean wasAccessible = method.isAccessible();
+                    try {
+                        method.setAccessible(true);
+                        return method.invoke(instance, new Object[]{});
+                    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                        throw new IllegalStateException("Problem invoking " + annotationClass + " : " + method, ex);
+                    } finally {
+                        method.setAccessible(wasAccessible);
                     }
                 });
             }
