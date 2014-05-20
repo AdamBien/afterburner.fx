@@ -51,10 +51,12 @@ package com.airhacks.afterburner.injection;
 import com.airhacks.afterburner.topgun.GunService;
 import com.airhacks.afterburner.topgun.TopgunPresenter;
 import com.airhacks.afterburner.topgun.TopgunView;
+import java.util.function.Function;
+import org.junit.After;
 import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
-import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
  *
@@ -62,10 +64,8 @@ import org.junit.Test;
  */
 public class MockingTest {
 
-    private TopgunPresenter cut;
-
-    @Before
-    public void init() {
+    @Test
+    public void mockIsActive() {
         InjectionProvider.setModelOrService(GunService.class, new GunService() {
 
             @Override
@@ -75,14 +75,37 @@ public class MockingTest {
 
         });
         TopgunView view = new TopgunView();
-        this.cut = (TopgunPresenter) view.getPresenter();
-    }
+        TopgunPresenter cut = (TopgunPresenter) view.getPresenter();
 
-    @Test
-    public void mockIsActive() {
-        final String messageFromGun = this.cut.getMessageFromGun();
+        final String messageFromGun = cut.getMessageFromGun();
         Assert.assertNotNull(messageFromGun);
         System.out.println(messageFromGun);
         assertTrue(messageFromGun.startsWith("don't"));
     }
+
+    @Test
+    public void setMockViaInstanceSupplier() {
+        Function<Class, Object> provider = (t) -> {
+            if (t.isAssignableFrom(GunService.class)) {
+                return Mockito.mock(t);
+            } else {
+                try {
+                    return t.newInstance();
+                } catch (InstantiationException | IllegalAccessException ex) {
+                    throw new IllegalStateException("Cannot create instance: " + t, ex);
+                }
+            }
+        };
+        InjectionProvider.setInstanceSupplier(provider);
+        TopgunView view = new TopgunView();
+        TopgunPresenter cut = (TopgunPresenter) view.getPresenter();
+        assertTrue(cut.getGunService().getClass().getName().contains("ByMockito"));
+
+    }
+
+    @After
+    public void cleanup() {
+        InjectionProvider.forgetAll();
+    }
+
 }
