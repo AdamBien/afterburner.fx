@@ -34,10 +34,9 @@ package com.airhacks.afterburner.views;
  * limitations under the License.
  * #L%
  */
-import junit.framework.Assert;
-import org.junit.Test;
-
 import java.util.ResourceBundle;
+import static org.junit.Assert.assertNull;
+import org.junit.Test;
 
 /**
  *
@@ -48,7 +47,7 @@ public class FXMLViewTest {
     @Test
     public void loadNonExistingBundle() {
         ResourceBundle loaded = FXMLView.getResourceBundle("non-existing");
-        Assert.assertNull(loaded);
+        assertNull(loaded);
     }
 
 }

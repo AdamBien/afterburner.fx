@@ -74,4 +74,9 @@ public class TopgunPresenter implements Initializable {
     public ResourceBundle getResourceBundle() {
         return rb;
     }
+
+    public GunService getGunService() {
+        return gs;
+    }
+
 }

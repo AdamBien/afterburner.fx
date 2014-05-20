@@ -9,9 +9,9 @@ package com.airhacks.afterburner.injection;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.function.Function;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -48,16 +49,22 @@ public class InjectionProvider {
     private static final Map<Class, Object> modelsAndServices = new WeakHashMap<>();
     private static final Set<Object> presenters = Collections.newSetFromMap(new WeakHashMap<>());
 
+    private static Function<Class, Object> instanceSupplier = getDefaultInstanceSupplier();
+
     public static Object instantiatePresenter(Class clazz) {
-        try {
-            return registerExistingAndInject(clazz.newInstance());
-        } catch (InstantiationException | IllegalAccessException ex) {
-            throw new IllegalStateException("Cannot instantiate view: " + clazz, ex);
-        }
+        return registerExistingAndInject(instanceSupplier.apply(clazz));
+    }
+
+    public static void setInstanceSupplier(Function<Class, Object> instanceSupplier) {
+        InjectionProvider.instanceSupplier = instanceSupplier;
+    }
+
+    public static void resetInstanceSupplier() {
+        instanceSupplier = getDefaultInstanceSupplier();
     }
 
     /**
-     * Caches the passed presenter internally and injects all fields internally
+     * Caches the passed presenter internally and injects all fields
      *
      * @param instance An already existing (legacy) presenter interesting in
      * injection
@@ -72,12 +79,8 @@ public class InjectionProvider {
     public static Object instantiateModelOrService(Class clazz) {
         Object product = modelsAndServices.get(clazz);
         if (product == null) {
-            try {
-                product = injectAndInitialize(clazz.newInstance());
-                modelsAndServices.putIfAbsent(clazz, product);
-            } catch (InstantiationException | IllegalAccessException ex) {
-                throw new IllegalStateException("Cannot instantiate view: " + clazz, ex);
-            }
+            product = injectAndInitialize(instanceSupplier.apply(clazz));
+            modelsAndServices.putIfAbsent(clazz, product);
         }
         return product;
     }
@@ -203,5 +206,16 @@ public class InjectionProvider {
         }
         presenters.clear();
         modelsAndServices.clear();
+        resetInstanceSupplier();
+    }
+
+    static Function<Class, Object> getDefaultInstanceSupplier() {
+        return (c) -> {
+            try {
+                return c.newInstance();
+            } catch (InstantiationException | IllegalAccessException ex) {
+                throw new IllegalStateException("Cannot instantiate view: " + c, ex);
+            }
+        };
     }
 }
