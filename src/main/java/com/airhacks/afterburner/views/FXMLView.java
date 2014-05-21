@@ -25,8 +25,6 @@ import java.net.URL;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import static java.util.ResourceBundle.getBundle;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -39,7 +37,6 @@ public abstract class FXMLView {
 
     public final static String DEFAULT_ENDING = "view";
     protected FXMLLoader fxmlLoader;
-    private static final ExecutorService THREAD_POOL = Executors.newCachedThreadPool();
     private ResourceBundle bundle;
 
     public FXMLView() {
