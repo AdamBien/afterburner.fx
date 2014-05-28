@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -49,12 +50,12 @@ public class Configurator {
 
     public final static String CONFIGURATION_FILE = "configuration.properties";
 
-    private Function<Object, Object> defaultSupplier;
+    private Function<Object, Object> systemProperties;
     private List<Function<Object, Object>> customConfigurators;
 
     public Configurator() {
         this.customConfigurators = new ArrayList<>();
-        this.defaultSupplier = getSystemPropertiesSupplier();
+        this.systemProperties = getSystemPropertiesSupplier();
     }
 
     public final Function<Object, Object> getSystemPropertiesSupplier() {
@@ -88,15 +89,17 @@ public class Configurator {
      */
     public Object getProperty(Class clazz, Object key) {
         Properties clazzProperties = this.getProperties(clazz);
-        Object value;
+        Object value = this.systemProperties.apply(key);
+        if (value != null) {
+            return value;
+        }
         if (clazzProperties != null) {
             value = clazzProperties.get(key);
-            if (value != null) {
-                return value;
-            }
         } else {
-            value = this.customConfigurators.stream().map(f -> f.apply(key)).findFirst().
-                    orElse(this.defaultSupplier.apply(key));
+            List<Object> values = this.customConfigurators.stream().map(f -> f.apply(key)).collect(Collectors.toList());
+            if (!values.isEmpty()) {
+                value = values.get(values.size() - 1);
+            }
         }
         return value;
     }

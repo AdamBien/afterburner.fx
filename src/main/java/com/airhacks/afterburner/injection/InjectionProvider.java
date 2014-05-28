@@ -19,8 +19,7 @@ package com.airhacks.afterburner.injection;
  * limitations under the License.
  * #L%
  */
-import java.io.IOException;
-import java.io.InputStream;
+import com.airhacks.afterburner.configuration.Configurator;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -30,7 +29,6 @@ import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Function;
@@ -44,12 +42,12 @@ import javax.inject.Inject;
  */
 public class InjectionProvider {
 
-    public final static String CONFIGURATION_FILE = "configuration.properties";
-
     private static final Map<Class, Object> modelsAndServices = new WeakHashMap<>();
     private static final Set<Object> presenters = Collections.newSetFromMap(new WeakHashMap<>());
 
     private static Function<Class, Object> instanceSupplier = getDefaultInstanceSupplier();
+
+    private static final Configurator configurator = new Configurator();
 
     public static Object instantiatePresenter(Class clazz) {
         return registerExistingAndInject(instanceSupplier.apply(clazz));
@@ -57,6 +55,10 @@ public class InjectionProvider {
 
     public static void setInstanceSupplier(Function<Class, Object> instanceSupplier) {
         InjectionProvider.instanceSupplier = instanceSupplier;
+    }
+
+    public static void addConfigurator(Function<Object, Object> configurationSupplier) {
+        configurator.add(configurationSupplier);
     }
 
     public static void resetInstanceSupplier() {
@@ -95,27 +97,6 @@ public class InjectionProvider {
         return product;
     }
 
-    static Properties getProperties(Class clazz) {
-        Properties configuration = new Properties();
-        try (InputStream stream = clazz.getResourceAsStream(CONFIGURATION_FILE)) {
-            if (stream == null) {
-                return null;
-            }
-            configuration.load(stream);
-        } catch (IOException ex) {
-            //a property file does not have to exist...
-        }
-        return configuration;
-    }
-
-    static String getProperty(Class clazz, String key) {
-        Properties properties = getProperties(clazz);
-        if (properties != null) {
-            return properties.getProperty(key);
-        }
-        return null;
-    }
-
     static void injectMembers(final Object instance) {
         Class<? extends Object> clazz = instance.getClass();
         injectMembers(clazz, instance);
@@ -126,24 +107,17 @@ public class InjectionProvider {
         for (final Field field : fields) {
             if (field.isAnnotationPresent(Inject.class)) {
                 Class<?> type = field.getType();
-                if (type.isAssignableFrom(String.class)) {
-                    String key = field.getName();
-                    String systemProperty = System.getProperty(key);
-                    String resultingValue;
-                    if (systemProperty != null) {
-                        resultingValue = systemProperty;
-                    } else {
-                        resultingValue = getProperty(clazz, key);
-                    }
-                    injectIntoField(field, instance, resultingValue);
-                } else {
-                    final Object target = instantiateModelOrService(type);
-                    injectIntoField(field, instance, target);
+                String key = field.getName();
+                Object value = configurator.getProperty(clazz, key);
+                if (value == null && !"java.lang".equals(type.getPackage().getName())) {
+                    value = instantiateModelOrService(type);
                 }
+                injectIntoField(field, instance, value);
             }
         }
         Class<? extends Object> superclass = clazz.getSuperclass();
-        if (superclass != null) {
+        if (superclass
+                != null) {
             injectMembers(superclass, instance);
         }
     }
@@ -165,12 +139,14 @@ public class InjectionProvider {
 
     static void initialize(Object instance) {
         Class<? extends Object> clazz = instance.getClass();
-        invokeMethodWithAnnotation(clazz, instance, PostConstruct.class);
+        invokeMethodWithAnnotation(clazz, instance, PostConstruct.class
+        );
     }
 
     static void destroy(Object instance) {
         Class<? extends Object> clazz = instance.getClass();
-        invokeMethodWithAnnotation(clazz, instance, PreDestroy.class);
+        invokeMethodWithAnnotation(clazz, instance, PreDestroy.class
+        );
     }
 
     static void invokeMethodWithAnnotation(Class clazz, final Object instance, final Class<? extends Annotation> annotationClass) throws IllegalStateException, SecurityException {
@@ -198,12 +174,12 @@ public class InjectionProvider {
 
     public static void forgetAll() {
         Collection<Object> values = modelsAndServices.values();
-        for (Object object : values) {
+        values.stream().forEach((object) -> {
             destroy(object);
-        }
-        for (Object object : presenters) {
+        });
+        presenters.stream().forEach((object) -> {
             destroy(object);
-        }
+        });
         presenters.clear();
         modelsAndServices.clear();
         resetInstanceSupplier();
