@@ -24,9 +24,9 @@ package com.airhacks.afterburner.configuration;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,15 +47,11 @@ public class Configurator {
 
     public final static String CONFIGURATION_FILE = "configuration.properties";
 
-    private Function<Object, Object> systemProperties;
+    private Properties systemProperties;
     private Function<Object, Object> customConfigurator;
 
     public Configurator() {
-        this.systemProperties = getSystemPropertiesSupplier();
-    }
-
-    public final Function<Object, Object> getSystemPropertiesSupplier() {
-        return k -> System.getProperty(k.toString());
+        this.systemProperties = System.getProperties();
     }
 
     public Configurator set(Function<Object, Object> custom) {
@@ -83,7 +79,7 @@ public class Configurator {
      * @return
      */
     public Object getProperty(Class clazz, Object key) {
-        Object value = this.systemProperties.apply(key);
+        Object value = this.systemProperties.get(key);
         if (value != null) {
             return value;
         }
@@ -93,7 +89,6 @@ public class Configurator {
                 return value;
             }
         }
-
         Properties clazzProperties = this.getProperties(clazz);
         if (clazzProperties != null) {
             value = clazzProperties.get(key);
