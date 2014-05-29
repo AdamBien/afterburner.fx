@@ -37,6 +37,7 @@ package com.airhacks.afterburner.configuration;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -50,12 +51,21 @@ public class Configurator {
     private final Properties systemProperties;
     private Function<Object, Object> customConfigurator;
 
+    private Consumer<String> LOG;
+
     public Configurator() {
         this.systemProperties = System.getProperties();
+        this.LOG = l -> {
+        };
     }
 
     public Configurator set(Function<Object, Object> custom) {
         this.customConfigurator = custom;
+        return this;
+    }
+
+    public Configurator setLogger(Consumer<String> log) {
+        this.LOG = log;
         return this;
     }
 

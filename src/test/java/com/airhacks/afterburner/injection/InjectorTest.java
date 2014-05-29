@@ -20,6 +20,7 @@ package com.airhacks.afterburner.injection;
  * #L%
  */
 import java.util.Date;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import static org.hamcrest.CoreMatchers.is;
 import org.junit.After;
@@ -30,7 +31,11 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+import static org.mockito.Matchers.anyString;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  *
@@ -147,6 +152,14 @@ public class InjectorTest {
         DateProperties systemProperties = (DateProperties) Injector.injectAndInitialize(new DateProperties());
         Date actual = systemProperties.getCustomDate();
         assertNull(actual);
+    }
+
+    @Test
+    public void logging() {
+        Consumer<String> logger = mock(Consumer.class);
+        Injector.setLogger(logger);
+        Injector.injectAndInitialize(new DateProperties());
+        verify(logger, atLeastOnce()).accept(anyString());
     }
 
     @After
