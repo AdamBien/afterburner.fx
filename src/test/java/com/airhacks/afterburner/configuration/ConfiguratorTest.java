@@ -67,7 +67,7 @@ public class ConfiguratorTest {
     public void customConfigurationOverridesDefault() {
         final String expected = "custom";
         Function<Object, Object> supplier = f -> expected;
-        this.cut.add(supplier);
+        this.cut.set(supplier);
         Object actual = this.cut.getProperty(ConfiguratorTest.class, "NOT-A-EXISTING-SYSPROP");
         assertThat(actual, is(expected));
     }
@@ -77,8 +77,8 @@ public class ConfiguratorTest {
         final String expected = "custom";
         Function<Object, Object> customSupplier = f -> "something";
         Function<Object, Object> veryCustomSupplier = f -> expected;
-        this.cut.add(customSupplier);
-        this.cut.add(veryCustomSupplier);
+        this.cut.set(customSupplier);
+        this.cut.set(veryCustomSupplier);
         Object actual = this.cut.getProperty(ConfiguratorTest.class, "java.version");
         assertThat(actual, is(System.getProperty("java.version")));
     }
@@ -87,7 +87,7 @@ public class ConfiguratorTest {
     public void customConfigurationProvidesValue() {
         final String expected = "custom";
         Function<Object, Object> supplier = f -> expected;
-        this.cut.add(supplier);
+        this.cut.set(supplier);
         Object actual = this.cut.getProperty(ConfiguratorTest.class, "NOT-EXISTING");
         assertThat(actual, is(expected));
     }

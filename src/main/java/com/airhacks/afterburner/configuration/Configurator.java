@@ -36,11 +36,8 @@ package com.airhacks.afterburner.configuration;
  */
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -51,10 +48,9 @@ public class Configurator {
     public final static String CONFIGURATION_FILE = "configuration.properties";
 
     private Function<Object, Object> systemProperties;
-    private List<Function<Object, Object>> customConfigurators;
+    private Function<Object, Object> customConfigurator;
 
     public Configurator() {
-        this.customConfigurators = new ArrayList<>();
         this.systemProperties = getSystemPropertiesSupplier();
     }
 
@@ -62,8 +58,8 @@ public class Configurator {
         return k -> System.getProperty(k.toString());
     }
 
-    public Configurator add(Function<Object, Object> custom) {
-        this.customConfigurators.add(custom);
+    public Configurator set(Function<Object, Object> custom) {
+        this.customConfigurator = custom;
         return this;
     }
 
@@ -81,25 +77,26 @@ public class Configurator {
     }
 
     /**
-     * Properties defined in a class-specific file have priority
      *
      * @param clazz
      * @param key
      * @return
      */
     public Object getProperty(Class clazz, Object key) {
-        Properties clazzProperties = this.getProperties(clazz);
         Object value = this.systemProperties.apply(key);
         if (value != null) {
             return value;
         }
+        if (customConfigurator != null) {
+            value = customConfigurator.apply(key);
+            if (value != null) {
+                return value;
+            }
+        }
+
+        Properties clazzProperties = this.getProperties(clazz);
         if (clazzProperties != null) {
             value = clazzProperties.get(key);
-        } else {
-            List<Object> values = this.customConfigurators.stream().map(f -> f.apply(key)).collect(Collectors.toList());
-            if (!values.isEmpty()) {
-                value = values.get(values.size() - 1);
-            }
         }
         return value;
     }

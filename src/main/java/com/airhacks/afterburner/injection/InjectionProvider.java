@@ -58,7 +58,7 @@ public class InjectionProvider {
     }
 
     public static void addConfigurator(Function<Object, Object> configurationSupplier) {
-        configurator.add(configurationSupplier);
+        configurator.set(configurationSupplier);
     }
 
     public static void resetInstanceSupplier() {
