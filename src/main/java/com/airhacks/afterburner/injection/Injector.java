@@ -40,7 +40,7 @@ import javax.inject.Inject;
  *
  * @author adam-bien.com
  */
-public class InjectionProvider {
+public class Injector {
 
     private static final Map<Class, Object> modelsAndServices = new WeakHashMap<>();
     private static final Set<Object> presenters = Collections.newSetFromMap(new WeakHashMap<>());
@@ -54,7 +54,7 @@ public class InjectionProvider {
     }
 
     public static void setInstanceSupplier(Function<Class, Object> instanceSupplier) {
-        InjectionProvider.instanceSupplier = instanceSupplier;
+        Injector.instanceSupplier = instanceSupplier;
     }
 
     public static void addConfigurator(Function<Object, Object> configurationSupplier) {

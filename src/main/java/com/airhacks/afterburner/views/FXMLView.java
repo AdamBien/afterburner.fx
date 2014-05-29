@@ -19,7 +19,8 @@ package com.airhacks.afterburner.views;
  * limitations under the License.
  * #L%
  */
-import com.airhacks.afterburner.injection.InjectionProvider;
+
+import com.airhacks.afterburner.injection.Injector;
 import java.io.IOException;
 import java.net.URL;
 import java.util.MissingResourceException;
@@ -52,7 +53,7 @@ public abstract class FXMLView {
 
     FXMLLoader loadSynchronously(final URL resource, ResourceBundle bundle, final String conventionalName) throws IllegalStateException {
         final FXMLLoader loader = new FXMLLoader(resource, bundle);
-        loader.setControllerFactory((Class<?> p) -> InjectionProvider.instantiatePresenter(p));
+        loader.setControllerFactory((Class<?> p) -> Injector.instantiatePresenter(p));
         try {
             loader.load();
         } catch (IOException ex) {

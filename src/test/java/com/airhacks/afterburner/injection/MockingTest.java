@@ -66,7 +66,7 @@ public class MockingTest {
 
     @Test
     public void mockIsActive() {
-        InjectionProvider.setModelOrService(GunService.class, new GunService() {
+        Injector.setModelOrService(GunService.class, new GunService() {
 
             @Override
             public String fireAndForget() {
@@ -96,7 +96,7 @@ public class MockingTest {
                 }
             }
         };
-        InjectionProvider.setInstanceSupplier(provider);
+        Injector.setInstanceSupplier(provider);
         TopgunView view = new TopgunView();
         TopgunPresenter cut = (TopgunPresenter) view.getPresenter();
         assertTrue(cut.getGunService().getClass().getName().contains("ByMockito"));
@@ -105,7 +105,7 @@ public class MockingTest {
 
     @After
     public void cleanup() {
-        InjectionProvider.forgetAll();
+        Injector.forgetAll();
     }
 
 }

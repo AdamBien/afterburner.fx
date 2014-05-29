@@ -34,7 +34,8 @@ package com.airhacks.afterburner.lifecycle;
  * limitations under the License.
  * #L%
  */
-import com.airhacks.afterburner.injection.InjectionProvider;
+
+import com.airhacks.afterburner.injection.Injector;
 import static org.hamcrest.CoreMatchers.is;
 import org.junit.After;
 import static org.junit.Assert.assertNotNull;
@@ -62,7 +63,7 @@ public class ModelLifecycleTest {
         assertThat(initializationCount, is(1));
         int destructionCount = this.cut.getDestructionCount();
         assertThat(destructionCount, is(0));
-        InjectionProvider.forgetAll();
+        Injector.forgetAll();
         destructionCount = this.cut.getDestructionCount();
         assertThat(destructionCount, is(1));
     }
@@ -75,6 +76,6 @@ public class ModelLifecycleTest {
 
     @After
     public void cleanUp() {
-        InjectionProvider.forgetAll();
+        Injector.forgetAll();
     }
 }

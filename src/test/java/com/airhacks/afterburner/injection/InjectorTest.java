@@ -35,67 +35,67 @@ import org.mockito.Mockito;
  *
  * @author adam-bien.com
  */
-public class InjectionProviderTest {
+public class InjectorTest {
 
     @Test
     public void injection() {
-        View view = (View) InjectionProvider.instantiatePresenter(View.class);
+        View view = (View) Injector.instantiatePresenter(View.class);
         Boundary boundary = view.getBoundary();
         assertNotNull(boundary);
         assertThat(boundary.getNumberOfInstances(), is(1));
-        AnotherView another = (AnotherView) InjectionProvider.instantiatePresenter(AnotherView.class);
+        AnotherView another = (AnotherView) Injector.instantiatePresenter(AnotherView.class);
         assertThat(boundary.getNumberOfInstances(), is(1));
     }
 
     @Test
     public void perInstanceInitialization() {
-        View first = (View) InjectionProvider.instantiatePresenter(View.class);
-        View second = (View) InjectionProvider.instantiatePresenter(View.class);
+        View first = (View) Injector.instantiatePresenter(View.class);
+        View second = (View) Injector.instantiatePresenter(View.class);
         assertNotSame(first, second);
     }
 
     @Test
     public void forgetAllPresenters() {
-        Presenter first = (Presenter) InjectionProvider.instantiatePresenter(Presenter.class);
-        InjectionProvider.forgetAll();
-        Presenter second = (Presenter) InjectionProvider.instantiatePresenter(Presenter.class);
+        Presenter first = (Presenter) Injector.instantiatePresenter(Presenter.class);
+        Injector.forgetAll();
+        Presenter second = (Presenter) Injector.instantiatePresenter(Presenter.class);
         assertNotSame(first, second);
     }
 
     @Test
     public void forgetAllModels() {
-        Model first = (Model) InjectionProvider.instantiateModelOrService(Model.class);
-        InjectionProvider.forgetAll();
-        Model second = (Model) InjectionProvider.instantiateModelOrService(Model.class);
+        Model first = (Model) Injector.instantiateModelOrService(Model.class);
+        Injector.forgetAll();
+        Model second = (Model) Injector.instantiateModelOrService(Model.class);
         assertNotSame(first, second);
     }
 
     @Test
     public void setInstanceSupplier() {
         Function<Class, Object> provider = t -> Mockito.mock(t);
-        InjectionProvider.setInstanceSupplier(provider);
-        Object mock = InjectionProvider.instantiateModelOrService(Model.class);
+        Injector.setInstanceSupplier(provider);
+        Object mock = Injector.instantiateModelOrService(Model.class);
         assertTrue(mock.getClass().getName().contains("ByMockito"));
-        InjectionProvider.resetInstanceSupplier();
+        Injector.resetInstanceSupplier();
     }
 
     @Test
     public void productInitialization() {
-        InitializableProduct product = (InitializableProduct) InjectionProvider.instantiatePresenter(InitializableProduct.class);
+        InitializableProduct product = (InitializableProduct) Injector.instantiatePresenter(InitializableProduct.class);
         assertTrue(product.isInitialized());
     }
 
     @Test
     public void existingPresenterInitialization() {
-        InitializableProduct product = (InitializableProduct) InjectionProvider.registerExistingAndInject(new InitializableProduct());
+        InitializableProduct product = (InitializableProduct) Injector.registerExistingAndInject(new InitializableProduct());
         assertTrue(product.isInitialized());
     }
 
     @Test
     public void productDestruction() {
-        DestructibleProduct product = (DestructibleProduct) InjectionProvider.instantiatePresenter(DestructibleProduct.class);
+        DestructibleProduct product = (DestructibleProduct) Injector.instantiatePresenter(DestructibleProduct.class);
         assertFalse(product.isDestroyed());
-        InjectionProvider.forgetAll();
+        Injector.forgetAll();
         assertTrue(product.isDestroyed());
     }
 
@@ -103,20 +103,20 @@ public class InjectionProviderTest {
     public void systemPropertiesInjectionOfExistingProperty() {
         final String expected = "42";
         System.setProperty("shouldExist", expected);
-        SystemProperties systemProperties = (SystemProperties) InjectionProvider.injectAndInitialize(new SystemProperties());
+        SystemProperties systemProperties = (SystemProperties) Injector.injectAndInitialize(new SystemProperties());
         String actual = systemProperties.getShouldExist();
         assertThat(actual, is(expected));
     }
 
     @Test
     public void systemPropertiesInjectionOfNotExistingProperty() {
-        SystemProperties systemProperties = (SystemProperties) InjectionProvider.injectAndInitialize(new SystemProperties());
+        SystemProperties systemProperties = (SystemProperties) Injector.injectAndInitialize(new SystemProperties());
         String actual = systemProperties.getDoesNotExists();
         assertNull(actual);
     }
 
     @After
     public void reset() {
-        InjectionProvider.forgetAll();
+        Injector.forgetAll();
     }
 }

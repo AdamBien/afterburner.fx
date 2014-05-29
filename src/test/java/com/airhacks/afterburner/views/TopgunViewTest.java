@@ -19,7 +19,8 @@ package com.airhacks.afterburner.views;
  * limitations under the License.
  * #L%
  */
-import com.airhacks.afterburner.injection.InjectionProvider;
+
+import com.airhacks.afterburner.injection.Injector;
 import com.airhacks.afterburner.topgun.TopgunPresenter;
 import com.airhacks.afterburner.topgun.TopgunView;
 import java.util.ResourceBundle;
@@ -111,7 +112,7 @@ public class TopgunViewTest {
 
     @After
     public void cleanUp() {
-        InjectionProvider.forgetAll();
+        Injector.forgetAll();
         System.clearProperty("host");
     }
 

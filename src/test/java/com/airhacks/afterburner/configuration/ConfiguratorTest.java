@@ -88,5 +88,4 @@ public class ConfiguratorTest {
         Object value = this.cut.getProperty(ConfiguratorTest.class, "SHOULD-NOT-EXIST");
         assertNull(value);
     }
-
 }
