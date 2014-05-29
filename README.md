@@ -25,7 +25,7 @@ Afterburner is also available from maven central:
         <dependency>
             <groupId>com.airhacks</groupId>
             <artifactId>afterburner.fx</artifactId>
-            <version>1.4.4</version>
+            <version>1.5.1</version>
         </dependency>
 ```
 The current development version is available as snapshot:
@@ -34,7 +34,7 @@ The current development version is available as snapshot:
         <dependency>
             <groupId>com.airhacks</groupId>
             <artifactId>afterburner.fx</artifactId>
-            <version>1.5.0-SNAPSHOT</version>
+            <version>1.5.2-SNAPSHOT</version>
         </dependency>
 ```
 
