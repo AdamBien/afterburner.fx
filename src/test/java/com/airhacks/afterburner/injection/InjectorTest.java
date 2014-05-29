@@ -115,6 +115,23 @@ public class InjectorTest {
         assertNull(actual);
     }
 
+    @Test
+    public void longInjectionWithCustomProvider() {
+        long expected = 42;
+        Injector.setConfigurationSource((f) -> expected);
+        CustomProperties systemProperties = (CustomProperties) Injector.injectAndInitialize(new CustomProperties());
+        long actual = systemProperties.getNumber();
+        assertThat(actual, is(expected));
+    }
+
+    @Test
+    public void longInjectionOfNotExistingProperty() {
+        long expected = 0;
+        CustomProperties systemProperties = (CustomProperties) Injector.injectAndInitialize(new CustomProperties());
+        long actual = systemProperties.getNumber();
+        assertThat(actual, is(expected));
+    }
+
     @After
     public void reset() {
         Injector.forgetAll();

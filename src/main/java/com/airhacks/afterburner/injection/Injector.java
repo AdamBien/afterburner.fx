@@ -57,7 +57,7 @@ public class Injector {
         Injector.instanceSupplier = instanceSupplier;
     }
 
-    public static void addConfigurator(Function<Object, Object> configurationSupplier) {
+    public static void setConfigurationSource(Function<Object, Object> configurationSupplier) {
         configurator.set(configurationSupplier);
     }
 
@@ -109,10 +109,13 @@ public class Injector {
                 Class<?> type = field.getType();
                 String key = field.getName();
                 Object value = configurator.getProperty(clazz, key);
-                if (value == null && !"java.lang".equals(type.getPackage().getName())) {
+                final Package fieldPackage = type.getPackage();
+                if (value == null && fieldPackage != null && !"java.lang".equals(fieldPackage.getName())) {
                     value = instantiateModelOrService(type);
                 }
-                injectIntoField(field, instance, value);
+                if (value != null) {
+                    injectIntoField(field, instance, value);
+                }
             }
         }
         Class<? extends Object> superclass = clazz.getSuperclass();
@@ -183,6 +186,7 @@ public class Injector {
         presenters.clear();
         modelsAndServices.clear();
         resetInstanceSupplier();
+        configurator.forgetAll();
     }
 
     static Function<Class, Object> getDefaultInstanceSupplier() {
