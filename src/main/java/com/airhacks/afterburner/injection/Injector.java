@@ -20,6 +20,8 @@ package com.airhacks.afterburner.injection;
  * #L%
  */
 import com.airhacks.afterburner.configuration.Configurator;
+import com.airhacks.afterburner.presenters.Presenter;
+import com.airhacks.afterburner.presenters.PresenterFactory;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -79,8 +81,7 @@ public class Injector {
     /**
      * Caches the passed presenter internally and injects all fields
      *
-     * @param instance An already existing (legacy) presenter interesting in
-     * injection
+     * @param instance An already existing (legacy) presenter interesting in injection
      * @return presenter with injected fields
      */
     public static Object registerExistingAndInject(Object instance) {
@@ -126,10 +127,16 @@ public class Injector {
                 final Package fieldPackage = type.getPackage();
                 if (value == null && fieldPackage != null && !fieldPackage.getName().startsWith("java")) {
                     LOG.accept("Field is not a JDK class");
-                    value = instantiateModelOrService(type);
+
+                    if (type.isAnnotationPresent(Presenter.class)) {
+                        LOG.accept("Field is a presenter");
+                        value = PresenterFactory.create(type);
+                    } else {
+                        value = instantiateModelOrService(type);
+                    }
                 }
                 if (value != null) {
-                    LOG.accept("Value is a primitive, injecting...");
+                    LOG.accept("Value is a primitive, injecting...");//???
                     injectIntoField(field, instance, value);
                 }
             }
