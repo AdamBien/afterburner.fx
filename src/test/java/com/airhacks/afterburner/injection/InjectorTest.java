@@ -151,7 +151,8 @@ public class InjectorTest {
     public void dateInjectionOfNotExistingProperty() {
         DateProperties systemProperties = (DateProperties) Injector.injectAndInitialize(new DateProperties());
         Date actual = systemProperties.getCustomDate();
-        assertNull(actual);
+        //java.util.Date is not a primitive, or String. Can be created and injected.
+        assertNotNull(actual);
     }
 
     @Test

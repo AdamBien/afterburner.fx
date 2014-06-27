@@ -123,8 +123,7 @@ public class Injector {
                 String key = field.getName();
                 Object value = configurator.getProperty(clazz, key);
                 LOG.accept("Value returned by configurator is: " + value);
-                final Package fieldPackage = type.getPackage();
-                if (value == null && fieldPackage != null && !fieldPackage.getName().startsWith("java")) {
+                if (value == null && isNotPrimitiveOrString(type)) {
                     LOG.accept("Field is not a JDK class");
                     value = instantiateModelOrService(type);
                 }
@@ -218,5 +217,9 @@ public class Injector {
     public static Consumer<String> getDefaultLogger() {
         return l -> {
         };
+    }
+
+    private static boolean isNotPrimitiveOrString(Class<?> type) {
+        return !type.isPrimitive() && !type.isAssignableFrom(String.class);
     }
 }
