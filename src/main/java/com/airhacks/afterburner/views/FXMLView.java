@@ -9,9 +9,9 @@ package com.airhacks.afterburner.views;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,13 +19,18 @@ package com.airhacks.afterburner.views;
  * limitations under the License.
  * #L%
  */
-
 import com.airhacks.afterburner.injection.Injector;
 import java.io.IOException;
 import java.net.URL;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import static java.util.ResourceBundle.getBundle;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -39,6 +44,7 @@ public abstract class FXMLView {
     public final static String DEFAULT_ENDING = "view";
     protected FXMLLoader fxmlLoader;
     private ResourceBundle bundle;
+    public final static Executor PARENT_CREATION_POOL = Executors.newCachedThreadPool();
 
     public FXMLView() {
         this.init(getClass(), getFXMLName());
@@ -66,6 +72,28 @@ public abstract class FXMLView {
         Parent parent = getLoader().getRoot();
         addCSSIfAvailable(parent);
         return parent;
+    }
+
+    /**
+     * Delegates the creation of the view to the JavaFX application thread
+     *
+     * @param consumer - an object interested in received the Parent as callback
+     */
+    public void getView(Consumer<Parent> consumer) {
+        Supplier<Parent> supplier = this::getView;
+        Executor fxExecutor = Platform::runLater;
+        CompletableFuture.supplyAsync(supplier, fxExecutor).thenAccept(consumer);
+    }
+
+    /**
+     * Creates the view asynchronously using a thread pool and passes the Parent
+     * as callback.
+     *
+     *
+     * @param consumer - an object interested in received the Parent as callback
+     */
+    public void getViewAsync(Consumer<Parent> consumer) {
+        PARENT_CREATION_POOL.execute(() -> getView(consumer));
     }
 
     /**
