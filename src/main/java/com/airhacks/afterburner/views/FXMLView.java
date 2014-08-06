@@ -9,9 +9,9 @@ package com.airhacks.afterburner.views;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,8 +22,6 @@ package com.airhacks.afterburner.views;
 import com.airhacks.afterburner.injection.Injector;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import static java.util.ResourceBundle.getBundle;
@@ -31,6 +29,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -47,14 +46,14 @@ public abstract class FXMLView {
     protected FXMLLoader fxmlLoader;
     private ResourceBundle bundle;
     public final static Executor PARENT_CREATION_POOL = Executors.newCachedThreadPool();
-    private final Map<String, Object> injectionContext;
+    private final Function<String, Object> injectionContext;
 
     public FXMLView() {
-        this(new HashMap<>());
+        this(f -> null);
         this.init(getClass(), getFXMLName());
     }
 
-    public FXMLView(Map<String, Object> injectionContext) {
+    public FXMLView(Function<String, Object> injectionContext) {
         this.injectionContext = injectionContext;
     }
 

@@ -9,9 +9,9 @@ package com.airhacks.afterburner.injection;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,7 +28,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -53,15 +52,16 @@ public class Injector {
 
     private static final Configurator configurator = new Configurator();
 
-    public static Object instantiatePresenter(Class clazz, Map<String, Object> injectionContext) {
+    public static Object instantiatePresenter(Class clazz, Function<String, Object> injectionContext) {
         Object presenter = registerExistingAndInject(instanceSupplier.apply(clazz));
         //after the regular, conventional initialization and injection, perform postinjection
         Field[] fields = clazz.getDeclaredFields();
         for (final Field field : fields) {
             if (field.isAnnotationPresent(Inject.class)) {
                 final String fieldName = field.getName();
-                if (injectionContext.containsKey(fieldName)) {
-                    injectIntoField(field, presenter, injectionContext.get(fieldName));
+                final Object value = injectionContext.apply(fieldName);
+                if (value != null) {
+                    injectIntoField(field, presenter, value);
                 }
             }
         }
@@ -69,7 +69,7 @@ public class Injector {
     }
 
     public static Object instantiatePresenter(Class clazz) {
-        return instantiatePresenter(clazz, new HashMap<>());
+        return instantiatePresenter(clazz, f -> null);
     }
 
     public static void setInstanceSupplier(Function<Class, Object> instanceSupplier) {
