@@ -28,6 +28,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -52,8 +53,23 @@ public class Injector {
 
     private static final Configurator configurator = new Configurator();
 
+    public static Object instantiatePresenter(Class clazz, Map<String, Object> injectionContext) {
+        Object presenter = registerExistingAndInject(instanceSupplier.apply(clazz));
+        //after the regular, conventional initialization and injection, perform postinjection
+        Field[] fields = clazz.getDeclaredFields();
+        for (final Field field : fields) {
+            if (field.isAnnotationPresent(Inject.class)) {
+                final String fieldName = field.getName();
+                if (injectionContext.containsKey(fieldName)) {
+                    injectIntoField(field, presenter, injectionContext.get(fieldName));
+                }
+            }
+        }
+        return presenter;
+    }
+
     public static Object instantiatePresenter(Class clazz) {
-        return registerExistingAndInject(instanceSupplier.apply(clazz));
+        return instantiatePresenter(clazz, new HashMap<>());
     }
 
     public static void setInstanceSupplier(Function<Class, Object> instanceSupplier) {

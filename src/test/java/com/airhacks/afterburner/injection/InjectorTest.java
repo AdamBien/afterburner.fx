@@ -20,6 +20,8 @@ package com.airhacks.afterburner.injection;
  * #L%
  */
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import static org.hamcrest.CoreMatchers.is;
@@ -66,6 +68,23 @@ public class InjectorTest {
         Injector.forgetAll();
         Presenter second = (Presenter) Injector.instantiatePresenter(Presenter.class);
         assertNotSame(first, second);
+    }
+
+    @Test
+    public void injectionContextWithEmptyContext() {
+        PresenterWithField withField = (PresenterWithField) Injector.instantiatePresenter(PresenterWithField.class);
+        assertNull(withField.getName());
+        Injector.forgetAll();
+    }
+
+    @Test
+    public void injectionContextWithMathingKey() {
+        String expected = "hello duke";
+        Map<String, Object> injectionContext = new HashMap<>();
+        injectionContext.put("name", expected);
+        PresenterWithField withField = (PresenterWithField) Injector.instantiatePresenter(PresenterWithField.class, injectionContext);
+        assertThat(withField.getName(), is(expected));
+        Injector.forgetAll();
     }
 
     @Test

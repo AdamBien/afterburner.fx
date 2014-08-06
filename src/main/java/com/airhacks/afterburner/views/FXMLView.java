@@ -22,6 +22,8 @@ package com.airhacks.afterburner.views;
 import com.airhacks.afterburner.injection.Injector;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import static java.util.ResourceBundle.getBundle;
@@ -45,9 +47,15 @@ public abstract class FXMLView {
     protected FXMLLoader fxmlLoader;
     private ResourceBundle bundle;
     public final static Executor PARENT_CREATION_POOL = Executors.newCachedThreadPool();
+    private final Map<String, Object> injectionContext;
 
     public FXMLView() {
+        this(new HashMap<>());
         this.init(getClass(), getFXMLName());
+    }
+
+    public FXMLView(Map<String, Object> injectionContext) {
+        this.injectionContext = injectionContext;
     }
 
     private void init(Class clazz, final String conventionalName) {
@@ -59,7 +67,7 @@ public abstract class FXMLView {
 
     FXMLLoader loadSynchronously(final URL resource, ResourceBundle bundle, final String conventionalName) throws IllegalStateException {
         final FXMLLoader loader = new FXMLLoader(resource, bundle);
-        loader.setControllerFactory((Class<?> p) -> Injector.instantiatePresenter(p));
+        loader.setControllerFactory((Class<?> p) -> Injector.instantiatePresenter(p, this.injectionContext));
         try {
             loader.load();
         } catch (IOException ex) {
