@@ -19,7 +19,6 @@ package com.airhacks.afterburner.views;
  * limitations under the License.
  * #L%
  */
-
 import com.airhacks.afterburner.injection.Injector;
 import com.airhacks.afterburner.topgun.TopgunPresenter;
 import com.airhacks.afterburner.topgun.TopgunView;
@@ -46,6 +45,7 @@ public class TopgunViewTest {
     @Before
     public void initialize() {
         this.view = new TopgunView();
+        this.view.getView();
         this.presenter = (TopgunPresenter) view.getPresenter();
     }
 
@@ -72,6 +72,7 @@ public class TopgunViewTest {
         final String expected = "ivory tower";
         System.setProperty("host", expected);
         TopgunView newView = new TopgunView();
+        newView.getView();
         TopgunPresenter newPresenter = (TopgunPresenter) newView.getPresenter();
         String actual = newPresenter.getHost();
         Assert.assertNotNull(actual);

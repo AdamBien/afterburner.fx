@@ -75,6 +75,7 @@ public class MockingTest {
 
         });
         TopgunView view = new TopgunView();
+        view.getView();
         TopgunPresenter cut = (TopgunPresenter) view.getPresenter();
 
         final String messageFromGun = cut.getMessageFromGun();
@@ -98,6 +99,7 @@ public class MockingTest {
         };
         Injector.setInstanceSupplier(provider);
         TopgunView view = new TopgunView();
+        view.getView();
         TopgunPresenter cut = (TopgunPresenter) view.getPresenter();
         assertTrue(cut.getGunService().getClass().getName().contains("ByMockito"));
 

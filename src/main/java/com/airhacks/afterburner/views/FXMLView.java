@@ -9,9 +9,9 @@ package com.airhacks.afterburner.views;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,6 +32,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -43,10 +46,12 @@ import javafx.scene.Parent;
 public abstract class FXMLView {
 
     public final static String DEFAULT_ENDING = "view";
-    protected FXMLLoader fxmlLoader;
+    protected ObjectProperty<Object> presenter;
     private ResourceBundle bundle;
     public final static Executor PARENT_CREATION_POOL = Executors.newCachedThreadPool();
     private final Function<String, Object> injectionContext;
+    private String bundleName;
+    private URL resource;
 
     public FXMLView() {
         this(f -> null);
@@ -58,10 +63,10 @@ public abstract class FXMLView {
     }
 
     private void init(Class clazz, final String conventionalName) {
-        final URL resource = clazz.getResource(conventionalName);
-        String bundleName = getBundleName();
+        this.presenter = new SimpleObjectProperty<>();
+        this.resource = clazz.getResource(conventionalName);
+        this.bundleName = getBundleName();
         this.bundle = getResourceBundle(bundleName);
-        this.fxmlLoader = loadSynchronously(resource, bundle, conventionalName);
     }
 
     FXMLLoader loadSynchronously(final URL resource, ResourceBundle bundle, final String conventionalName) throws IllegalStateException {
@@ -76,7 +81,9 @@ public abstract class FXMLView {
     }
 
     public Parent getView() {
-        Parent parent = getLoader().getRoot();
+        FXMLLoader fxmlLoader = this.loadSynchronously(resource, bundle, bundleName);
+        Parent parent = fxmlLoader.getRoot();
+        this.presenter.set(fxmlLoader.getController());
         addCSSIfAvailable(parent);
         return parent;
     }
@@ -131,8 +138,19 @@ public abstract class FXMLView {
         return getConventionalName(".css");
     }
 
+    /**
+     *
+     * @return the controller / presenter only in case the getView method was
+     * already invoked
+     */
     public Object getPresenter() {
-        return this.getLoader().getController();
+        return this.presenter.get();
+    }
+
+    public void getPresenter(Consumer<Object> presenterConsumer) {
+        this.presenter.addListener((ObservableValue<? extends Object> o, Object oldValue, Object newValue) -> {
+            presenterConsumer.accept(newValue);
+        });
     }
 
     String getConventionalName(String ending) {
@@ -177,7 +195,4 @@ public abstract class FXMLView {
         return this.bundle;
     }
 
-    FXMLLoader getLoader() {
-        return this.fxmlLoader;
-    }
 }

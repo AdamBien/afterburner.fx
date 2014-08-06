@@ -34,7 +34,6 @@ package com.airhacks.afterburner.lifecycle;
  * limitations under the License.
  * #L%
  */
-
 import com.airhacks.afterburner.injection.Injector;
 import static org.hamcrest.CoreMatchers.is;
 import org.junit.After;
@@ -53,7 +52,9 @@ public class ModelLifecycleTest {
 
     @Before
     public void initialize() {
-        LifecyclePresenter presenter = (LifecyclePresenter) new LifecycleView().getPresenter();
+        final LifecycleView lifecycleView = new LifecycleView();
+        lifecycleView.getView(); //eagerly initialize
+        LifecyclePresenter presenter = (LifecyclePresenter) lifecycleView.getPresenter();
         this.cut = presenter.concreteModel;
     }
 
