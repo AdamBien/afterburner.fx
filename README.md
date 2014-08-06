@@ -38,6 +38,8 @@ The current development version is available as snapshot:
         </dependency>
 ```
 
+[![igniter / afterburner walk-through](https://i1.ytimg.com/vi/xqkbu1IrHSw/mqdefault.jpg)](https://www.youtube.com/watch?v=xqkbu1IrHSw)
+
 See also: [http://afterburner.adam-bien.com](http://afterburner.adam-bien.com)
 
 Simplistic example:  [https://github.com/AdamBien/followme.fx](https://github.com/AdamBien/followme.fx)
