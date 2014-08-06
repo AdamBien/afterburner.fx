@@ -50,11 +50,11 @@ public abstract class FXMLView {
 
     public FXMLView() {
         this(f -> null);
-        this.init(getClass(), getFXMLName());
     }
 
     public FXMLView(Function<String, Object> injectionContext) {
         this.injectionContext = injectionContext;
+        this.init(getClass(), getFXMLName());
     }
 
     private void init(Class clazz, final String conventionalName) {
