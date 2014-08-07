@@ -64,13 +64,6 @@ public class Configurator {
         return this;
     }
 
-    public Configurator add(Function<Object, Object> custom) {
-        if (this.customConfigurator != null) {
-            this.customConfigurator.andThen(custom);
-        }
-        return this;
-    }
-
     public Configurator setLogger(Consumer<String> log) {
         this.LOG = log;
         return this;
