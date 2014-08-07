@@ -46,14 +46,13 @@ import javafx.scene.Parent;
 public abstract class FXMLView {
 
     public final static String DEFAULT_ENDING = "view";
-    protected ObjectProperty<Object> presenter;
+    protected ObjectProperty<Object> presenterProperty;
     protected FXMLLoader fxmlLoader;
-    private ResourceBundle bundle;
-    public final static Executor PARENT_CREATION_POOL = Executors.newCachedThreadPool();
-    private final Function<String, Object> injectionContext;
-    private String bundleName;
-    private URL resource;
-    private Parent parent;
+    protected String bundleName;
+    protected ResourceBundle bundle;
+    protected final Function<String, Object> injectionContext;
+    protected URL resource;
+    protected final static Executor PARENT_CREATION_POOL = Executors.newCachedThreadPool();
 
     public FXMLView() {
         this(f -> null);
@@ -65,7 +64,7 @@ public abstract class FXMLView {
     }
 
     private void init(Class clazz, final String conventionalName) {
-        this.presenter = new SimpleObjectProperty<>();
+        this.presenterProperty = new SimpleObjectProperty<>();
         this.resource = clazz.getResource(conventionalName);
         this.bundleName = getBundleName();
         this.bundle = getResourceBundle(bundleName);
@@ -83,18 +82,17 @@ public abstract class FXMLView {
     }
 
     public Parent getView() {
-        this.loadParent();
+        this.initializeFXMLLoader();
+        Parent parent = fxmlLoader.getRoot();
+        addCSSIfAvailable(parent);
         return parent;
     }
 
-    public void loadParent() {
+    public void initializeFXMLLoader() {
         if (this.fxmlLoader == null) {
             this.fxmlLoader = this.loadSynchronously(resource, bundle, bundleName);
-            this.parent = fxmlLoader.getRoot();
-            this.presenter.set(fxmlLoader.getController());
-            addCSSIfAvailable(parent);
+            this.presenterProperty.set(this.fxmlLoader.getController());
         }
-
     }
 
     /**
@@ -153,12 +151,12 @@ public abstract class FXMLView {
      * already invoked
      */
     public Object getPresenter() {
-        this.loadParent();
-        return this.presenter.get();
+        this.initializeFXMLLoader();
+        return this.presenterProperty.get();
     }
 
     public void getPresenter(Consumer<Object> presenterConsumer) {
-        this.presenter.addListener((ObservableValue<? extends Object> o, Object oldValue, Object newValue) -> {
+        this.presenterProperty.addListener((ObservableValue<? extends Object> o, Object oldValue, Object newValue) -> {
             presenterConsumer.accept(newValue);
         });
     }
