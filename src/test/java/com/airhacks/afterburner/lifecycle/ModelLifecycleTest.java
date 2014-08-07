@@ -53,7 +53,6 @@ public class ModelLifecycleTest {
     @Before
     public void initialize() {
         final LifecycleView lifecycleView = new LifecycleView();
-        lifecycleView.getView(); //eagerly initialize
         LifecyclePresenter presenter = (LifecyclePresenter) lifecycleView.getPresenter();
         this.cut = presenter.concreteModel;
     }

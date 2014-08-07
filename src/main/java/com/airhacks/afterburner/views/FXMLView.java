@@ -47,11 +47,13 @@ public abstract class FXMLView {
 
     public final static String DEFAULT_ENDING = "view";
     protected ObjectProperty<Object> presenter;
+    protected FXMLLoader fxmlLoader;
     private ResourceBundle bundle;
     public final static Executor PARENT_CREATION_POOL = Executors.newCachedThreadPool();
     private final Function<String, Object> injectionContext;
     private String bundleName;
     private URL resource;
+    private Parent parent;
 
     public FXMLView() {
         this(f -> null);
@@ -81,11 +83,18 @@ public abstract class FXMLView {
     }
 
     public Parent getView() {
-        FXMLLoader fxmlLoader = this.loadSynchronously(resource, bundle, bundleName);
-        Parent parent = fxmlLoader.getRoot();
-        this.presenter.set(fxmlLoader.getController());
-        addCSSIfAvailable(parent);
+        this.loadParent();
         return parent;
+    }
+
+    public void loadParent() {
+        if (this.fxmlLoader == null) {
+            this.fxmlLoader = this.loadSynchronously(resource, bundle, bundleName);
+            this.parent = fxmlLoader.getRoot();
+            this.presenter.set(fxmlLoader.getController());
+            addCSSIfAvailable(parent);
+        }
+
     }
 
     /**
@@ -144,6 +153,7 @@ public abstract class FXMLView {
      * already invoked
      */
     public Object getPresenter() {
+        this.loadParent();
         return this.presenter.get();
     }
 

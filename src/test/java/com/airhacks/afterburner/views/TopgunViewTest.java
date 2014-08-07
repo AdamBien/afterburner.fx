@@ -45,7 +45,6 @@ public class TopgunViewTest {
     @Before
     public void initialize() {
         this.view = new TopgunView();
-        this.view.getView();
         this.presenter = (TopgunPresenter) view.getPresenter();
     }
 
@@ -72,7 +71,6 @@ public class TopgunViewTest {
         final String expected = "ivory tower";
         System.setProperty("host", expected);
         TopgunView newView = new TopgunView();
-        newView.getView();
         TopgunPresenter newPresenter = (TopgunPresenter) newView.getPresenter();
         String actual = newPresenter.getHost();
         Assert.assertNotNull(actual);
