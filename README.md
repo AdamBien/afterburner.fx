@@ -10,7 +10,7 @@ afterburner.fx provides:
 3. Conventional resource bundle loading.
 4. Injection of System.getProperties.
 6. Injection of presenter-local configuration properties (system properties are overriding the local configuration).
-7. Afterburner is a "Just-Enough-Framework" extracted from [airhacks-control](https://github.com/AdamBien/airhacks-control) and used in [airpad](https://github.com/AdamBien/airpad) and [lightfish](https://github.com/AdamBien/lightfish) applications
+7. Afterburner is a "Just-Enough-Framework" extracted from [airhacks-control](https://github.com/AdamBien/airhacks-control) and used in [airpad](https://github.com/AdamBien/airpad), [lightfish](https://github.com/AdamBien/lightfish) and [floyd](https://github.com/AdamBien/floyd) applications
 
 Jumpstart with:
 
@@ -25,7 +25,7 @@ Afterburner is also available from maven central:
         <dependency>
             <groupId>com.airhacks</groupId>
             <artifactId>afterburner.fx</artifactId>
-            <version>1.5.1</version>
+            <version>1.6.0</version>
         </dependency>
 ```
 The current development version is available as snapshot:
@@ -34,7 +34,7 @@ The current development version is available as snapshot:
         <dependency>
             <groupId>com.airhacks</groupId>
             <artifactId>afterburner.fx</artifactId>
-            <version>1.5.2-SNAPSHOT</version>
+            <version>1.6.1-SNAPSHOT</version>
         </dependency>
 ```
 
