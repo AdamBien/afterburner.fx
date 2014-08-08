@@ -64,6 +64,11 @@ public class ConfiguratorTest {
     }
 
     @Test
+    public void loggerPassed() {
+        this.cut.setLogger((l) -> System.out.println(l));
+    }
+
+    @Test
     public void systemPropertyWins() {
         final String expected = "custom";
         Function<Object, Object> customSupplier = f -> "something";
