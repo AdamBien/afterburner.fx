@@ -9,9 +9,9 @@ package com.airhacks.afterburner.views;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -54,10 +54,20 @@ public abstract class FXMLView {
     protected URL resource;
     protected final static Executor PARENT_CREATION_POOL = Executors.newCachedThreadPool();
 
+    /**
+     * Constructs the view lazily (fxml is not loaded) with empty injection
+     * context.
+     */
     public FXMLView() {
         this(f -> null);
     }
 
+    /**
+     *
+     * @param injectionContext the function is used as a injection source.
+     * Values matching for the keys are going to be used for injection into the
+     * corresponding presenter.
+     */
     public FXMLView(Function<String, Object> injectionContext) {
         this.injectionContext = injectionContext;
         this.init(getClass(), getFXMLName());
@@ -81,14 +91,7 @@ public abstract class FXMLView {
         return loader;
     }
 
-    public Parent getView() {
-        this.initializeFXMLLoader();
-        Parent parent = fxmlLoader.getRoot();
-        addCSSIfAvailable(parent);
-        return parent;
-    }
-
-    public void initializeFXMLLoader() {
+    void initializeFXMLLoader() {
         if (this.fxmlLoader == null) {
             this.fxmlLoader = this.loadSynchronously(resource, bundle, bundleName);
             this.presenterProperty.set(this.fxmlLoader.getController());
@@ -96,7 +99,21 @@ public abstract class FXMLView {
     }
 
     /**
-     * Delegates the creation of the view to the JavaFX application thread
+     * Initializes the view by loading the FXML (if not happened yet) and
+     * returns the top Node (parent) specified in
+     *
+     * @return
+     */
+    public Parent getView() {
+        this.initializeFXMLLoader();
+        Parent parent = fxmlLoader.getRoot();
+        addCSSIfAvailable(parent);
+        return parent;
+    }
+
+    /**
+     * Initializes the view synchronously and invokes and passes the created
+     * parent Node to the consumer within the FX UI thread.
      *
      * @param consumer - an object interested in received the Parent as callback
      */
@@ -107,8 +124,8 @@ public abstract class FXMLView {
     }
 
     /**
-     * Creates the view asynchronously using a thread pool and passes the Parent
-     * as callback.
+     * Creates the view asynchronously using an internal thread pool and passes
+     * the parent node withing the UI Thread.
      *
      *
      * @param consumer - an object interested in received the Parent as callback
@@ -146,15 +163,26 @@ public abstract class FXMLView {
     }
 
     /**
+     * In case the view was not initialized yet, the conventional fxml
+     * (airhacks.fxml for the AirhacksView and AirhacksPresenter) are loaded and
+     * the specified presenter / controller is going to be constructed and
+     * returned.
      *
-     * @return the controller / presenter only in case the getView method was
-     * already invoked
+     * @return the corresponding controller / presenter (usually for a
+     * AirhacksView the AirhacksPresenter)
      */
     public Object getPresenter() {
         this.initializeFXMLLoader();
         return this.presenterProperty.get();
     }
 
+    /**
+     * Does not initialize the view. Only registers the Consumer and waits until
+     * the the view is going to be created / the method FXMLView#getView or
+     * FXMLView#getViewAsync invoked.
+     *
+     * @param presenterConsumer listener for the presenter construction
+     */
     public void getPresenter(Consumer<Object> presenterConsumer) {
         this.presenterProperty.addListener((ObservableValue<? extends Object> o, Object oldValue, Object newValue) -> {
             presenterConsumer.accept(newValue);
@@ -165,6 +193,11 @@ public abstract class FXMLView {
         return getConventionalName() + ending;
     }
 
+    /**
+     *
+     * @return the name of the view without the "View" prefix in lowerCase. For
+     * AirhacksView just airhacks is going to be returned.
+     */
     String getConventionalName() {
         String clazz = this.getClass().getSimpleName().toLowerCase();
         return stripEnding(clazz);
@@ -183,6 +216,11 @@ public abstract class FXMLView {
         return clazz.substring(0, viewIndex);
     }
 
+    /**
+     *
+     * @return the name of the fxml file derived from the FXML view. e.g. The
+     * name for the AirhacksView is going to be airhacks.fxml.
+     */
     final String getFXMLName() {
         return getConventionalName(".fxml");
     }
