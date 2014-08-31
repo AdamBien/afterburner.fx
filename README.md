@@ -3,14 +3,9 @@ afterburner.fx
 
 The opinionated just-enough MVP framework (2.5 classes) for JavaFX
 
-afterburner.fx provides:
+Afterburner is a "Just-Enough-Framework" extracted from [airhacks-control](https://github.com/AdamBien/airhacks-control) and used in [airpad](https://github.com/AdamBien/airpad), [lightfish](https://github.com/AdamBien/lightfish) and [floyd](https://github.com/AdamBien/floyd) applications. 
 
-1. "Zero-Configuration" javax.inject.Inject DI of models or services into presenters.
-2. Convention-based unification of presenter, view, FXML and css.
-3. Conventional resource bundle loading.
-4. Injection of System.getProperties.
-6. Injection of presenter-local configuration properties (system properties are overriding the local configuration).
-7. Afterburner is a "Just-Enough-Framework" extracted from [airhacks-control](https://github.com/AdamBien/airhacks-control) and used in [airpad](https://github.com/AdamBien/airpad), [lightfish](https://github.com/AdamBien/lightfish) and [floyd](https://github.com/AdamBien/floyd) applications
+Goal: "Less Code, Increased Productivity"
 
 Jumpstart with:
 
@@ -25,18 +20,10 @@ Afterburner is also available from maven central:
         <dependency>
             <groupId>com.airhacks</groupId>
             <artifactId>afterburner.fx</artifactId>
-            <version>1.6.0</version>
+            <version>[LATEST_RELEASE]</version>
         </dependency>
 ```
 The current development version is available as snapshot:
-
-```xml
-        <dependency>
-            <groupId>com.airhacks</groupId>
-            <artifactId>afterburner.fx</artifactId>
-            <version>1.6.1-SNAPSHOT</version>
-        </dependency>
-```
 
 [![igniter / afterburner walk-through](https://i1.ytimg.com/vi/xqkbu1IrHSw/mqdefault.jpg)](https://www.youtube.com/watch?v=xqkbu1IrHSw)
 
