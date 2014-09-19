@@ -52,7 +52,11 @@ public abstract class FXMLView {
     protected ResourceBundle bundle;
     protected final Function<String, Object> injectionContext;
     protected URL resource;
-    protected final static Executor PARENT_CREATION_POOL = Executors.newCachedThreadPool();
+    protected final static Executor PARENT_CREATION_POOL = Executors.newCachedThreadPool(runnable -> {
+        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+        thread.setDaemon(true);
+        return thread;
+    });
 
     /**
      * Constructs the view lazily (fxml is not loaded) with empty injection
