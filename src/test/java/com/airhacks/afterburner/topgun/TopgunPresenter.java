@@ -36,8 +36,11 @@ package com.airhacks.afterburner.topgun;
  */
 import java.net.URL;
 import java.util.ResourceBundle;
+
 import javafx.fxml.Initializable;
+
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * FXML Controller class
@@ -50,6 +53,10 @@ public class TopgunPresenter implements Initializable {
     private String host;
 
     @Inject
+    @Named("fire.rate")
+    private String fireRate;
+
+	@Inject
     GunService gs;
 
     ResourceBundle rb;
@@ -65,6 +72,10 @@ public class TopgunPresenter implements Initializable {
 
     public String getHost() {
         return host;
+    }
+    
+    public String getFireRate() {
+    	return fireRate;
     }
 
     public String getMessageFromGun() {

@@ -183,7 +183,7 @@ public class InjectorTest {
     }
     
     @Test
-    public void nammedSystemProperties() {
+    public void namedSystemProperties() {
     	NamedInjection named = (NamedInjection) Injector.injectAndInitialize(new NamedInjection());
     	
     	assertThat(named.getUserHome(), is(System.getProperty("user.home")));
