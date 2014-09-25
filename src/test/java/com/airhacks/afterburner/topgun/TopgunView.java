@@ -1,6 +1,7 @@
 package com.airhacks.afterburner.topgun;
 
 import com.airhacks.afterburner.views.FXMLView;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -26,5 +27,12 @@ import com.airhacks.afterburner.views.FXMLView;
  * @author adam-bien.com
  */
 public class TopgunView extends FXMLView {
+
+    public TopgunView() {
+    }
+
+    public TopgunView(Function<String, Object> injectionContext) {
+        super(injectionContext);
+    }
 
 }

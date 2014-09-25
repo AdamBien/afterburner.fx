@@ -22,6 +22,7 @@ package com.airhacks.afterburner.views;
 import com.airhacks.afterburner.injection.Injector;
 import com.airhacks.afterburner.topgun.TopgunPresenter;
 import com.airhacks.afterburner.topgun.TopgunView;
+import java.util.Date;
 import java.util.ResourceBundle;
 import javafx.scene.Parent;
 import static org.hamcrest.CoreMatchers.is;
@@ -107,6 +108,15 @@ public class TopgunViewTest {
         TopgunPresenter first = (TopgunPresenter) this.view.getPresenter();
         TopgunPresenter second = (TopgunPresenter) this.view.getPresenter();
         assertSame(first, second);
+    }
+
+    @Test
+    public void perViewInjection() {
+        Date actual = new Date();
+        TopgunView v = new TopgunView(d -> actual);
+        TopgunPresenter p = (TopgunPresenter) v.getPresenter();
+        Date injected = p.getDate();
+        assertThat(injected, is(actual));
     }
 
     @After

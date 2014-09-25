@@ -35,6 +35,7 @@ package com.airhacks.afterburner.topgun;
  * #L%
  */
 import java.net.URL;
+import java.util.Date;
 import java.util.ResourceBundle;
 import javafx.fxml.Initializable;
 import javax.inject.Inject;
@@ -51,6 +52,9 @@ public class TopgunPresenter implements Initializable {
 
     @Inject
     GunService gs;
+
+    @Inject
+    Date date;
 
     ResourceBundle rb;
 
@@ -79,4 +83,7 @@ public class TopgunPresenter implements Initializable {
         return gs;
     }
 
+    public Date getDate() {
+        return date;
+    }
 }

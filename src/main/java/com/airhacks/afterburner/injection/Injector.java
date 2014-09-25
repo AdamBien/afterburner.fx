@@ -60,7 +60,7 @@ public class Injector {
             if (field.isAnnotationPresent(Inject.class)) {
                 final String fieldName = field.getName();
                 final Object value = injectionContext.apply(fieldName);
-                if (value != null) {
+                if (value != null && value.getClass().isAssignableFrom(field.getType())) {
                     injectIntoField(field, presenter, value);
                 }
             }
