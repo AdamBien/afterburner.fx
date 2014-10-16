@@ -20,6 +20,7 @@ package com.airhacks.afterburner.injection;
  * #L%
  */
 import com.airhacks.afterburner.configuration.Configurator;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -29,10 +30,12 @@ import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -223,9 +226,12 @@ public class Injector {
     static Function<Class, Object> getDefaultInstanceSupplier() {
         return (c) -> {
             try {
+            	if (c.isInterface()) {
+            		return ServiceLoader.load(c);
+            	}
                 return c.newInstance();
             } catch (InstantiationException | IllegalAccessException ex) {
-                throw new IllegalStateException("Cannot instantiate view: " + c, ex);
+                throw new IllegalStateException("Cannot instantiate: " + c, ex);
             }
         };
     }
