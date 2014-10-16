@@ -29,6 +29,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -225,14 +226,21 @@ public class Injector {
 
     static Function<Class, Object> getDefaultInstanceSupplier() {
         return (c) -> {
-            try {
-            	if (c.isInterface()) {
-            		return ServiceLoader.load(c);
-            	}
-                return c.newInstance();
-            } catch (InstantiationException | IllegalAccessException ex) {
-                throw new IllegalStateException("Cannot instantiate: " + c, ex);
-            }
+        	if (c.isInterface()) {
+        		// For an interface default behavior is to delegate to standard JRE loading mechanism ServiceLoader
+        		Iterator itProviders = ServiceLoader.load(c).iterator();
+        		if (itProviders.hasNext()) {
+        			return itProviders.next();
+        		}
+				throw new IllegalStateException("Cannot, via ServiceLoader, instanciate an object from interface: " + c);
+        	} else {
+        		try {
+            		// It's a class, let's try to instanciate it directly
+        			return c.newInstance();
+        		} catch (InstantiationException | IllegalAccessException ex) {
+        			throw new IllegalStateException("Cannot instantiate: " + c, ex);
+        		}
+        	}
         };
     }
 
