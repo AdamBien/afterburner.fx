@@ -46,14 +46,15 @@ public class Injector {
     private static final Map<Class, Object> modelsAndServices = new WeakHashMap<>();
     private static final Set<Object> presenters = Collections.newSetFromMap(new WeakHashMap<>());
 
-    private static Function<Class, Object> instanceSupplier = getDefaultInstanceSupplier();
+    private static InstanceProvider instanceSupplier = getDefaultInstanceSupplier();
 
     private static Consumer<String> LOG = getDefaultLogger();
 
     private static final Configurator configurator = new Configurator();
 
     public static Object instantiatePresenter(Class clazz, Function<String, Object> injectionContext) {
-        Object presenter = registerExistingAndInject(instanceSupplier.apply(clazz));
+        Object presenter = registerExistingAndInject(instanceSupplier.instanciate(clazz));
+        
         //after the regular, conventional initialization and injection, perform postinjection
         Field[] fields = clazz.getDeclaredFields();
         for (final Field field : fields) {
@@ -72,7 +73,7 @@ public class Injector {
         return instantiatePresenter(clazz, f -> null);
     }
 
-    public static void setInstanceSupplier(Function<Class, Object> instanceSupplier) {
+    public static void setInstanceSupplier(InstanceProvider instanceSupplier) {
         Injector.instanceSupplier = instanceSupplier;
     }
 
@@ -97,10 +98,11 @@ public class Injector {
      *
      * @param instance An already existing (legacy) presenter interesting in
      * injection
+     * @param injectionAlreadyDone 
      * @return presenter with injected fields
      */
     public static Object registerExistingAndInject(Object instance) {
-        Object product = injectAndInitialize(instance);
+        Object product = instanceSupplier.isInjectionAware()?instance:injectAndInitialize(instance);
         presenters.add(product);
         return product;
     }
@@ -108,7 +110,8 @@ public class Injector {
     public static Object instantiateModelOrService(Class clazz) {
         Object product = modelsAndServices.get(clazz);
         if (product == null) {
-            product = injectAndInitialize(instanceSupplier.apply(clazz));
+        	Object instance = instanceSupplier.instanciate(clazz);
+            product = instanceSupplier.isInjectionAware()?instance:injectAndInitialize(instance);
             modelsAndServices.putIfAbsent(clazz, product);
         }
         return product;
@@ -220,7 +223,7 @@ public class Injector {
         resetConfigurationSource();
     }
 
-    static Function<Class, Object> getDefaultInstanceSupplier() {
+    static InstanceProvider getDefaultInstanceSupplier() {
         return (c) -> {
             try {
                 return c.newInstance();
@@ -237,5 +240,14 @@ public class Injector {
 
     private static boolean isNotPrimitiveOrString(Class<?> type) {
         return !type.isPrimitive() && !type.isAssignableFrom(String.class);
+    }
+    
+    @FunctionalInterface
+    public static interface InstanceProvider {
+    	public default boolean isInjectionAware() {
+    		return false;
+    	}
+    	
+    	public Object instanciate(Class<?> c);
     }
 }
