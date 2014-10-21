@@ -111,8 +111,10 @@ public class Injector {
         Object product = modelsAndServices.get(clazz);
         if (product == null) {
         	Object instance = instanceSupplier.instanciate(clazz);
-            product = instanceSupplier.isInjectionAware()?instance:injectAndInitialize(instance);
-            modelsAndServices.putIfAbsent(clazz, product);
+        	product = instanceSupplier.isInjectionAware()?instance:injectAndInitialize(instance);
+        	if (!instanceSupplier.isScopeAware()) {
+        		modelsAndServices.putIfAbsent(clazz, product);
+        	}
         }
         return product;
     }
@@ -244,7 +246,20 @@ public class Injector {
     
     @FunctionalInterface
     public static interface InstanceProvider {
+    	/**
+    	 * Express the fact that the InstanceProvider also handles injection & javax.inject lifecycle callbacks
+    	 * @return true it the InstanceProvider handles injection & lifecycle callbacks, false otherwise
+    	 */
     	public default boolean isInjectionAware() {
+    		return false;
+    	}
+    	
+    	/**
+    	 * Tells if the InjectionProvider handles javax.inject.Scope and thus if the InjectionProvider is able to "cache" instances
+    	 * depending on their scope creation
+    	 * @return true it the InstanceProvider is Scope aware, false otherwise
+    	 */
+    	public default boolean isScopeAware() {
     		return false;
     	}
     	
