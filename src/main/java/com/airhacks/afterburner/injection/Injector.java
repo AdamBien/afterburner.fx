@@ -9,9 +9,9 @@ package com.airhacks.afterburner.injection;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,7 +20,6 @@ package com.airhacks.afterburner.injection;
  * #L%
  */
 import com.airhacks.afterburner.configuration.Configurator;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -36,7 +35,6 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -59,7 +57,7 @@ public class Injector {
 
     public static Object instantiatePresenter(Class clazz, Function<String, Object> injectionContext) {
         Object presenter = registerExistingAndInject(instanceSupplier.instantiate(clazz));
-        
+
         //after the regular, conventional initialization and injection, perform postinjection
         Field[] fields = clazz.getDeclaredFields();
         for (final Field field : fields) {
@@ -103,11 +101,11 @@ public class Injector {
      *
      * @param instance An already existing (legacy) presenter interesting in
      * injection
-     * @param injectionAlreadyDone 
+     *
      * @return presenter with injected fields
      */
     public static Object registerExistingAndInject(Object instance) {
-        Object product = instanceSupplier.isInjectionAware()?instance:injectAndInitialize(instance);
+        Object product = instanceSupplier.isInjectionAware() ? instance : injectAndInitialize(instance);
         presenters.add(product);
         return product;
     }
@@ -115,11 +113,11 @@ public class Injector {
     public static Object instantiateModelOrService(Class clazz) {
         Object product = modelsAndServices.get(clazz);
         if (product == null) {
-        	Object instance = instanceSupplier.instantiate(clazz);
-        	product = instanceSupplier.isInjectionAware()?instance:injectAndInitialize(instance);
-        	if (!instanceSupplier.isScopeAware()) {
-        		modelsAndServices.putIfAbsent(clazz, product);
-        	}
+            Object instance = instanceSupplier.instantiate(clazz);
+            product = instanceSupplier.isInjectionAware() ? instance : injectAndInitialize(instance);
+            if (!instanceSupplier.isScopeAware()) {
+                modelsAndServices.putIfAbsent(clazz, product);
+            }
         }
         return product;
     }
@@ -146,7 +144,7 @@ public class Injector {
             if (field.isAnnotationPresent(Inject.class)) {
                 LOG.accept("Field annotated with @Inject found: " + field);
                 Class<?> type = field.getType();
-                String key = (field.isAnnotationPresent(Named.class))?field.getAnnotation(Named.class).value():field.getName();
+                String key = (field.isAnnotationPresent(Named.class)) ? field.getAnnotation(Named.class).value() : field.getName();
                 Object value = configurator.getProperty(clazz, key);
                 LOG.accept("Value returned by configurator is: " + value);
                 if (value == null && isNotPrimitiveOrString(type)) {
@@ -232,21 +230,21 @@ public class Injector {
 
     static InstanceProvider getDefaultInstanceSupplier() {
         return (c) -> {
-        	if (c.isInterface()) {
-        		// For an interface default behavior is to delegate to standard JRE loading mechanism ServiceLoader
-        		Iterator itProviders = ServiceLoader.load(c).iterator();
-        		if (itProviders.hasNext()) {
-        			return itProviders.next();
-        		}
-				throw new IllegalStateException("Cannot, via ServiceLoader, instanciate an object from interface: " + c);
-        	} else {
-        		try {
-            		// It's a class, let's try to instantiate it directly
-        			return c.newInstance();
-        		} catch (InstantiationException | IllegalAccessException ex) {
-        			throw new IllegalStateException("Cannot instantiate: " + c, ex);
-        		}
-        	}
+            if (c.isInterface()) {
+                // For an interface default behavior is to delegate to standard JRE loading mechanism ServiceLoader
+                Iterator itProviders = ServiceLoader.load(c).iterator();
+                if (itProviders.hasNext()) {
+                    return itProviders.next();
+                }
+                throw new IllegalStateException("Cannot, via ServiceLoader, instanciate an object from interface: " + c);
+            } else {
+                try {
+                    // It's a class, let's try to instantiate it directly
+                    return c.newInstance();
+                } catch (InstantiationException | IllegalAccessException ex) {
+                    throw new IllegalStateException("Cannot instantiate: " + c, ex);
+                }
+            }
         };
     }
 
@@ -258,26 +256,32 @@ public class Injector {
     private static boolean isNotPrimitiveOrString(Class<?> type) {
         return !type.isPrimitive() && !type.isAssignableFrom(String.class);
     }
-    
+
     @FunctionalInterface
     public static interface InstanceProvider {
-    	/**
-    	 * Express the fact that the InstanceProvider also handles injection & javax.inject lifecycle callbacks
-    	 * @return true it the InstanceProvider handles injection & lifecycle callbacks, false otherwise
-    	 */
-    	public default boolean isInjectionAware() {
-    		return false;
-    	}
-    	
-    	/**
-    	 * Tells if the InjectionProvider handles javax.inject.Scope and thus if the InjectionProvider is able to "cache" instances
-    	 * depending on their scope creation
-    	 * @return true it the InstanceProvider is Scope aware, false otherwise
-    	 */
-    	public default boolean isScopeAware() {
-    		return false;
-    	}
-    	
-    	public Object instantiate(Class<?> c);
+
+        /**
+         * Express the fact that the InstanceProvider also handles injection and
+         * javax.inject lifecycle callbacks
+         *
+         * @return true it the InstanceProvider handles injection and lifecycle
+         * callbacks, false otherwise
+         */
+        public default boolean isInjectionAware() {
+            return false;
+        }
+
+        /**
+         * Tells if the InjectionProvider handles javax.inject.Scope and thus if
+         * the InjectionProvider is able to "cache" instances depending on their
+         * scope creation
+         *
+         * @return true it the InstanceProvider is Scope aware, false otherwise
+         */
+        public default boolean isScopeAware() {
+            return false;
+        }
+
+        public Object instantiate(Class<?> c);
     }
 }
