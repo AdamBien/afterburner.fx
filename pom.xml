@@ -6,7 +6,7 @@
         <version>9</version>
     </parent>
     <groupId>com.airhacks</groupId>
-    <artifactId>afterburner.fx</artifactId>
+    <artifactId>afterburner-topgun.fx</artifactId>
     <version>1.6.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
