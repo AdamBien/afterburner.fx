@@ -48,13 +48,18 @@ package com.airhacks.afterburner.injection;
  * limitations under the License.
  * #L%
  */
+import com.airhacks.afterburner.injection.Injector.InstanceProvider;
 import com.airhacks.afterburner.topgun.GunService;
 import com.airhacks.afterburner.topgun.TopgunPresenter;
 import com.airhacks.afterburner.topgun.TopgunView;
+
 import java.util.function.Function;
+
 import org.junit.After;
 import org.junit.Assert;
+
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -85,7 +90,7 @@ public class MockingTest {
 
     @Test
     public void setMockViaInstanceSupplier() {
-        Function<Class, Object> provider = (t) -> {
+        InstanceProvider provider = (t) -> {
             if (t.isAssignableFrom(GunService.class)) {
                 return Mockito.mock(t);
             } else {
