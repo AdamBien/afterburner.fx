@@ -19,7 +19,7 @@ Afterburner is also available from maven central:
 ```xml
         <dependency>
             <groupId>com.airhacks</groupId>
-            <artifactId>afterburner.fx</artifactId>
+            <artifactId>afterburner-topgun.fx</artifactId>
             <version>[LATEST_RELEASE]</version>
         </dependency>
 ```
