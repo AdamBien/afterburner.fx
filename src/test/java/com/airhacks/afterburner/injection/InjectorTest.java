@@ -24,17 +24,26 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
 import static org.hamcrest.CoreMatchers.is;
+
 import org.junit.After;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
+
 import static org.mockito.Matchers.anyString;
+
 import org.mockito.Mockito;
+
+import com.airhacks.afterburner.injection.Injector.InstanceProvider;
+
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -97,7 +106,7 @@ public class InjectorTest {
 
     @Test
     public void setInstanceSupplier() {
-        Function<Class, Object> provider = t -> Mockito.mock(t);
+        InstanceProvider provider = t -> Mockito.mock(t);
         Injector.setInstanceSupplier(provider);
         Object mock = Injector.instantiateModelOrService(Model.class);
         assertTrue(mock.getClass().getName().contains("ByMockito"));
