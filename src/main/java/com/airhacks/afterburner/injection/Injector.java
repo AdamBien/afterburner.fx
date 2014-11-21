@@ -58,7 +58,7 @@ public class Injector {
     private static final Configurator configurator = new Configurator();
 
     public static Object instantiatePresenter(Class clazz, Function<String, Object> injectionContext) {
-        Object presenter = registerExistingAndInject(instanceSupplier.instanciate(clazz));
+        Object presenter = registerExistingAndInject(instanceSupplier.instantiate(clazz));
         
         //after the regular, conventional initialization and injection, perform postinjection
         Field[] fields = clazz.getDeclaredFields();
@@ -115,7 +115,7 @@ public class Injector {
     public static Object instantiateModelOrService(Class clazz) {
         Object product = modelsAndServices.get(clazz);
         if (product == null) {
-        	Object instance = instanceSupplier.instanciate(clazz);
+        	Object instance = instanceSupplier.instantiate(clazz);
         	product = instanceSupplier.isInjectionAware()?instance:injectAndInitialize(instance);
         	if (!instanceSupplier.isScopeAware()) {
         		modelsAndServices.putIfAbsent(clazz, product);
@@ -241,7 +241,7 @@ public class Injector {
 				throw new IllegalStateException("Cannot, via ServiceLoader, instanciate an object from interface: " + c);
         	} else {
         		try {
-            		// It's a class, let's try to instanciate it directly
+            		// It's a class, let's try to instantiate it directly
         			return c.newInstance();
         		} catch (InstantiationException | IllegalAccessException ex) {
         			throw new IllegalStateException("Cannot instantiate: " + c, ex);
@@ -278,6 +278,6 @@ public class Injector {
     		return false;
     	}
     	
-    	public Object instanciate(Class<?> c);
+    	public Object instantiate(Class<?> c);
     }
 }

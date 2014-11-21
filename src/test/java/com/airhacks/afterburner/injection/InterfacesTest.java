@@ -33,7 +33,7 @@ public class InterfacesTest {
 
     @Test
     public void canBuildAnInterfaceObjectDeclaredInServiceLoader() {
-        Object builtObject = Injector.getDefaultInstanceSupplier().instanciate(Ping.class);
+        Object builtObject = Injector.getDefaultInstanceSupplier().instantiate(Ping.class);
 
         assertThat(builtObject, notNullValue());
         assertThat(builtObject, instanceOf(SimplePing.class));
@@ -41,7 +41,7 @@ public class InterfacesTest {
 
     @Test(expected = IllegalStateException.class)
     public void failWhenNoInterfaceImplementationIsFound() {
-        Injector.getDefaultInstanceSupplier().instanciate(Pong.class);
+        Injector.getDefaultInstanceSupplier().instantiate(Pong.class);
     }
 
     @Test
