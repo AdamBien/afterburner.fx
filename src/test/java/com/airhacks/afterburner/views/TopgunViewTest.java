@@ -53,9 +53,13 @@ public class TopgunViewTest {
     public void loadViewWithConfiguration() {
         Assert.assertNotNull(presenter);
         String host = presenter.getHost();
+        String fireRate = presenter.getFireRate();
         Assert.assertNotNull(host);
-        final String expected = "tower"; //from configuration.properties
-        assertThat(host, is(expected));
+        Assert.assertNotNull(fireRate);
+        final String expectedHost = "tower"; // from configuration.properties
+        final String expectedFireRate = "250"; // from configuration.properties using named injection
+        assertThat(host, is(expectedHost));
+        assertThat(fireRate, is(expectedFireRate));
     }
 
     @Test
