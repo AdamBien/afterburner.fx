@@ -1,7 +1,10 @@
-afterburner.fx
+afterburner-topgun.fx
 ==============
 
 The opinionated just-enough MVP framework (2.5 classes) for JavaFX
+
+The "topgun" edition contains "cool" community contributions, which are not backed with Use Cases.
+
 
 Afterburner is a "Just-Enough-Framework" extracted from [airhacks-control](https://github.com/AdamBien/airhacks-control) and used in [airpad](https://github.com/AdamBien/airpad), [lightfish](https://github.com/AdamBien/lightfish) and [floyd](https://github.com/AdamBien/floyd) applications. 
 
