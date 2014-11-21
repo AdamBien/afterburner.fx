@@ -7,7 +7,7 @@
     </parent>
     <groupId>com.airhacks</groupId>
     <artifactId>afterburner-topgun.fx</artifactId>
-    <version>1.6.2-SNAPSHOT</version>
+    <version>1.6.2</version>
     <packaging>jar</packaging>
 
     <name>afterburner.fx</name>
@@ -57,19 +57,6 @@
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>default-test</id>
-                        <configuration>
-                            <excludes>
-                                <exclude>com/airhacks/afterburner/injection/cdi/**.java</exclude>
-                            </excludes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <version>1.6</version>
@@ -101,11 +88,25 @@
                         </goals>
                         <configuration>
                             <artifactSet>
-                                <includes>
-                                    <include>javax.inject:javax.inject</include>
-                                </includes>
+                                <excludes>
+                                    <exclude>junit:junit</exclude>
+                                </excludes>
                             </artifactSet>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -134,7 +135,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.2.201409121644</version>   <!-- update to get rid of https://github.com/jacoco/jacoco/issues/201 -->
+                <version>0.7.2.201409121644</version>
                 <executions>
                     <execution>
                         <goals>
@@ -181,7 +182,7 @@
         <connection>scm:git:git@github.com:AdamBien/afterburner.fx.git</connection>
         <url>scm:git:git@github.com:AdamBien/afterburner.fx.git</url>
         <developerConnection>scm:git:git@github.com:AdamBien/afterburner.fx.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>v1.6.2</tag>
     </scm>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
