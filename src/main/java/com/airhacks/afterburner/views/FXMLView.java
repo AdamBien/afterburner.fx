@@ -9,9 +9,9 @@ package com.airhacks.afterburner.views;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -193,7 +193,12 @@ public abstract class FXMLView {
         });
     }
 
-    String getConventionalName(String ending) {
+    /**
+     *
+     * @param ending the suffix to append
+     * @return the conventional name with stripped ending
+     */
+    protected String getConventionalName(String ending) {
         return getConventionalName() + ending;
     }
 
@@ -202,7 +207,7 @@ public abstract class FXMLView {
      * @return the name of the view without the "View" prefix in lowerCase. For
      * AirhacksView just airhacks is going to be returned.
      */
-    String getConventionalName() {
+    protected String getConventionalName() {
         String clazz = this.getClass().getSimpleName().toLowerCase();
         return stripEnding(clazz);
     }
