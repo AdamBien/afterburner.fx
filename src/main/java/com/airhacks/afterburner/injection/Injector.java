@@ -105,13 +105,13 @@ public class Injector {
         return product;
     }
 
-    public static Object instantiateModelOrService(Class clazz) {
+    public static <T> T instantiateModelOrService(Class<T> clazz) {
         Object product = modelsAndServices.get(clazz);
         if (product == null) {
             product = injectAndInitialize(instanceSupplier.apply(clazz));
             modelsAndServices.putIfAbsent(clazz, product);
         }
-        return product;
+        return clazz.cast(product);
     }
 
     public static void setModelOrService(Class clazz, Object instance) {
