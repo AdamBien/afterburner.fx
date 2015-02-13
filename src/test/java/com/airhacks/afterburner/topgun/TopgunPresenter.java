@@ -56,6 +56,9 @@ public class TopgunPresenter implements Initializable {
     @Inject
     Date date;
 
+    @Inject
+    int damage;
+
     ResourceBundle rb;
 
     /**
@@ -86,4 +89,9 @@ public class TopgunPresenter implements Initializable {
     public Date getDate() {
         return date;
     }
+
+    public int getDamage() {
+        return damage;
+    }
+
 }

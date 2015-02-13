@@ -60,7 +60,7 @@ public class Injector {
             if (field.isAnnotationPresent(Inject.class)) {
                 final String fieldName = field.getName();
                 final Object value = injectionContext.apply(fieldName);
-                if (value != null && value.getClass().isAssignableFrom(field.getType())) {
+                if (value != null) {
                     injectIntoField(field, presenter, value);
                 }
             }
@@ -164,7 +164,7 @@ public class Injector {
                 field.set(instance, target);
                 return null; // return nothing...
             } catch (IllegalArgumentException | IllegalAccessException ex) {
-                throw new IllegalStateException("Cannot set field: " + field, ex);
+                throw new IllegalStateException("Cannot set field: " + field + " with value " + target, ex);
             } finally {
                 field.setAccessible(wasAccessible);
             }

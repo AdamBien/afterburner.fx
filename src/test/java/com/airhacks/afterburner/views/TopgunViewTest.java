@@ -9,9 +9,9 @@ package com.airhacks.afterburner.views;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,7 @@ import com.airhacks.afterburner.topgun.TopgunPresenter;
 import com.airhacks.afterburner.topgun.TopgunView;
 import java.util.Date;
 import java.util.ResourceBundle;
+import java.util.function.Function;
 import javafx.scene.Parent;
 import static org.hamcrest.CoreMatchers.is;
 import org.junit.After;
@@ -111,19 +112,47 @@ public class TopgunViewTest {
     }
 
     @Test
-    public void perViewInjection() {
+    public void perViewObjectInjection() {
         Date firstDate = new Date();
-        TopgunView first = new TopgunView(d -> firstDate);
+        TopgunView first = new TopgunView(getInjectionContext("date", firstDate));
         TopgunPresenter firstPresenter = (TopgunPresenter) first.getPresenter();
         Date injected = firstPresenter.getDate();
         assertThat(injected, is(firstDate));
 
         Date secondDate = new Date();
-        TopgunView second = new TopgunView(d -> secondDate);
+        TopgunView second = new TopgunView(getInjectionContext("date", secondDate));
         TopgunPresenter secondPresenter = (TopgunPresenter) second.getPresenter();
         injected = secondPresenter.getDate();
         assertThat(injected, is(secondDate));
+    }
 
+    @Test
+    public void perViewPrimitiveInjection() {
+        int firstExpected = 21;
+        TopgunView first = new TopgunView(getInjectionContext("damage", firstExpected));
+        TopgunPresenter firstPresenter = (TopgunPresenter) first.getPresenter();
+        int actual = firstPresenter.getDamage();
+        assertThat(actual, is(firstExpected));
+
+        int secondExpected = 42;
+        TopgunView second = new TopgunView(getInjectionContext("damage", secondExpected));
+        TopgunPresenter secondPresenter = (TopgunPresenter) second.getPresenter();
+        actual = secondPresenter.getDamage();
+        assertThat(actual, is(secondExpected));
+
+    }
+
+    Function<String, Object> getInjectionContext(String fieldName, Object value) {
+        return new Function<String, Object>() {
+
+            @Override
+            public Object apply(String key) {
+                if (fieldName.equalsIgnoreCase(key)) {
+                    return value;
+                }
+                return null;
+            }
+        };
     }
 
     @After
