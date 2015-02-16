@@ -4,3 +4,6 @@ releaseAndUpload.sh
 uploadSnapshot.sh
 .idea
 *.iml
+.classpath
+.project
+*.settings/
