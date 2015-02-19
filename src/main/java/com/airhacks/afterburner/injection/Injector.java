@@ -20,6 +20,7 @@ package com.airhacks.afterburner.injection;
  * #L%
  */
 import com.airhacks.afterburner.configuration.Configurator;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -33,6 +34,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -43,17 +45,19 @@ import javax.inject.Inject;
  */
 public class Injector {
 
-    private static final Map<Class, Object> modelsAndServices = new WeakHashMap<>();
+    private static final Map<Class<?>, Object> modelsAndServices = new WeakHashMap<>();
     private static final Set<Object> presenters = Collections.newSetFromMap(new WeakHashMap<>());
 
-    private static Function<Class, Object> instanceSupplier = getDefaultInstanceSupplier();
+    private static Function<Class<?>, Object> instanceSupplier = getDefaultInstanceSupplier();
 
     private static Consumer<String> LOG = getDefaultLogger();
 
     private static final Configurator configurator = new Configurator();
 
-    public static Object instantiatePresenter(Class clazz, Function<String, Object> injectionContext) {
-        Object presenter = registerExistingAndInject(instanceSupplier.apply(clazz));
+    
+	public static <T> T instantiatePresenter(Class<T> clazz, Function<String, Object> injectionContext) {
+		@SuppressWarnings("unchecked")
+		T presenter = registerExistingAndInject( (T)instanceSupplier.apply(clazz));
         //after the regular, conventional initialization and injection, perform postinjection
         Field[] fields = clazz.getDeclaredFields();
         for (final Field field : fields) {
@@ -68,11 +72,11 @@ public class Injector {
         return presenter;
     }
 
-    public static Object instantiatePresenter(Class clazz) {
+    public static <T> T instantiatePresenter(Class<T> clazz) {
         return instantiatePresenter(clazz, f -> null);
     }
 
-    public static void setInstanceSupplier(Function<Class, Object> instanceSupplier) {
+    public static void setInstanceSupplier(Function<Class<?>, Object> instanceSupplier) {
         Injector.instanceSupplier = instanceSupplier;
     }
 
@@ -99,26 +103,28 @@ public class Injector {
      * injection
      * @return presenter with injected fields
      */
-    public static Object registerExistingAndInject(Object instance) {
-        Object product = injectAndInitialize(instance);
+    public static <T> T registerExistingAndInject(T instance) {
+        T product = injectAndInitialize(instance);
         presenters.add(product);
         return product;
     }
 
-    public static <T> T instantiateModelOrService(Class<T> clazz) {
-        Object product = modelsAndServices.get(clazz);
+    
+	@SuppressWarnings("unchecked")
+	public static <T> T instantiateModelOrService(Class<T> clazz) {
+		T product = (T) modelsAndServices.get(clazz);
         if (product == null) {
-            product = injectAndInitialize(instanceSupplier.apply(clazz));
+            product = injectAndInitialize((T)instanceSupplier.apply(clazz));
             modelsAndServices.putIfAbsent(clazz, product);
         }
         return clazz.cast(product);
     }
 
-    public static void setModelOrService(Class clazz, Object instance) {
+    public static <T> void setModelOrService(Class<T> clazz, T instance) {
         modelsAndServices.put(clazz, instance);
     }
 
-    static Object injectAndInitialize(Object product) {
+    static <T> T injectAndInitialize(T product) {
         injectMembers(product);
         initialize(product);
         return product;
@@ -156,8 +162,8 @@ public class Injector {
         }
     }
 
-    static void injectIntoField(final Field field, final Object instance, final Object target) {
-        AccessController.doPrivileged((PrivilegedAction) () -> {
+	static void injectIntoField(final Field field, final Object instance, final Object target) {
+        AccessController.doPrivileged((PrivilegedAction<?>) () -> {
             boolean wasAccessible = field.isAccessible();
             try {
                 field.setAccessible(true);
@@ -183,11 +189,11 @@ public class Injector {
         );
     }
 
-    static void invokeMethodWithAnnotation(Class clazz, final Object instance, final Class<? extends Annotation> annotationClass) throws IllegalStateException, SecurityException {
+    static void invokeMethodWithAnnotation(Class<?> clazz, final Object instance, final Class<? extends Annotation> annotationClass) throws IllegalStateException, SecurityException {
         Method[] declaredMethods = clazz.getDeclaredMethods();
         for (final Method method : declaredMethods) {
             if (method.isAnnotationPresent(annotationClass)) {
-                AccessController.doPrivileged((PrivilegedAction) () -> {
+                AccessController.doPrivileged((PrivilegedAction<?>) () -> {
                     boolean wasAccessible = method.isAccessible();
                     try {
                         method.setAccessible(true);
@@ -200,7 +206,7 @@ public class Injector {
                 });
             }
         }
-        Class superclass = clazz.getSuperclass();
+        Class<?> superclass = clazz.getSuperclass();
         if (superclass != null) {
             invokeMethodWithAnnotation(superclass, instance, annotationClass);
         }
@@ -220,7 +226,7 @@ public class Injector {
         resetConfigurationSource();
     }
 
-    static Function<Class, Object> getDefaultInstanceSupplier() {
+    static Function<Class<?>, Object> getDefaultInstanceSupplier() {
         return (c) -> {
             try {
                 return c.newInstance();

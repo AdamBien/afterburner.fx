@@ -77,7 +77,7 @@ public abstract class FXMLView {
         this.init(getClass(), getFXMLName());
     }
 
-    private void init(Class clazz, final String conventionalName) {
+    private void init(Class<?> clazz, final String conventionalName) {
         this.presenterProperty = new SimpleObjectProperty<>();
         this.resource = clazz.getResource(conventionalName);
         this.bundleName = getBundleName();
