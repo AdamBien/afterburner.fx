@@ -69,7 +69,7 @@ public class Configurator {
         return this;
     }
 
-    Properties getProperties(Class clazz) {
+    Properties getProperties(Class<?> clazz) {
         Properties configuration = new Properties();
         try (InputStream stream = clazz.getResourceAsStream(CONFIGURATION_FILE)) {
             if (stream == null) {
@@ -89,7 +89,7 @@ public class Configurator {
      * @param key
      * @return
      */
-    public Object getProperty(Class clazz, Object key) {
+    public Object getProperty(Class<?> clazz, Object key) {
         Object value = this.systemProperties.get(key);
         if (value != null) {
             return value;

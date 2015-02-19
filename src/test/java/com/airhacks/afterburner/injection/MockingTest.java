@@ -85,7 +85,7 @@ public class MockingTest {
 
     @Test
     public void setMockViaInstanceSupplier() {
-        Function<Class, Object> provider = (t) -> {
+        Function<Class<?>, Object> provider = (t) -> {
             if (t.isAssignableFrom(GunService.class)) {
                 return Mockito.mock(t);
             } else {
