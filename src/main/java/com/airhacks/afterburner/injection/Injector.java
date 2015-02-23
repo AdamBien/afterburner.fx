@@ -109,13 +109,14 @@ public class Injector {
         return product;
     }
 
-    
-	@SuppressWarnings("unchecked")
-	public static <T> T instantiateModelOrService(Class<T> clazz) {
-		T product = (T) modelsAndServices.get(clazz);
+    @SuppressWarnings("unchecked")
+    public static <T> T instantiateModelOrService(Class<T> clazz) {
+        T product = (T) modelsAndServices.get(clazz);
         if (product == null) {
             product = injectAndInitialize((T)instanceSupplier.apply(clazz));
-            modelsAndServices.putIfAbsent(clazz, product);
+            if (modelsAndServices.get(clazz) == null) {
+                modelsAndServices.put(clazz, product);
+            }
         }
         return clazz.cast(product);
     }
