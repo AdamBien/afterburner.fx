@@ -6,7 +6,7 @@
         <version>9</version>
     </parent>
     <groupId>com.airhacks</groupId>
-    <artifactId>afterburner.fx</artifactId>
+    <artifactId>afterburner.fx-mobile</artifactId>
     <version>1.6.3-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -146,6 +146,19 @@
                         <phase>prepare-package</phase>
                         <goals>
                             <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+           <plugin>
+                <groupId>net.orfjackal.retrolambda</groupId>
+                <artifactId>retrolambda-maven-plugin</artifactId>
+                <version>1.8.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>process-main</goal>
+                            <goal>process-test</goal>
                         </goals>
                     </execution>
                 </executions>
