@@ -1,7 +1,7 @@
 afterburner.fx
 ==============
 
-The opinionated just-enough MVP framework (2.5 classes) for JavaFX
+The opinionated just-enough MVP framework (2.5 classes) for JavaFX on mobile devices.
 
 Afterburner is a "Just-Enough-Framework" extracted from [airhacks-control](https://github.com/AdamBien/airhacks-control) and used in [airpad](https://github.com/AdamBien/airpad), [lightfish](https://github.com/AdamBien/lightfish) and [floyd](https://github.com/AdamBien/floyd) applications. 
 
@@ -15,7 +15,16 @@ mvn archetype:generate -Dfilter=com.airhacks:igniter
 
 
 
-Afterburner is also available from maven central:
+Mobile afterburner is also available from maven central:
+```xml
+        <dependency>
+            <groupId>com.airhacks</groupId>
+            <artifactId>afterburner.mfx</artifactId>
+            <version>[LATEST_RELEASE]</version>
+        </dependency>
+```
+For a desktop application use:
+
 ```xml
         <dependency>
             <groupId>com.airhacks</groupId>
@@ -23,6 +32,7 @@ Afterburner is also available from maven central:
             <version>[LATEST_RELEASE]</version>
         </dependency>
 ```
+
 The current development version is available as snapshot:
 
 [![igniter / afterburner walk-through](https://i1.ytimg.com/vi/xqkbu1IrHSw/mqdefault.jpg)](https://www.youtube.com/watch?v=xqkbu1IrHSw)
