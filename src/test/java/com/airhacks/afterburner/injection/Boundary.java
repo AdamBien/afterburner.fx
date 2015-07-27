@@ -20,12 +20,14 @@ package com.airhacks.afterburner.injection;
  * #L%
  */
 
+import javax.inject.Singleton;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
  * @author adam-bien.com
  */
+@Singleton
 public class Boundary {
 
     static AtomicInteger INSTANCE_COUNT = new AtomicInteger(0);

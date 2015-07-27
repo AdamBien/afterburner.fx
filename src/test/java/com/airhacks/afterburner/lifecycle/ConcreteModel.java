@@ -35,12 +35,14 @@ package com.airhacks.afterburner.lifecycle;
  * #L%
  */
 
+import javax.inject.Singleton;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
  * @author adam-bien.com
  */
+@Singleton
 public class ConcreteModel extends AbstractModel {
 
     private final AtomicInteger initializationCounter = new AtomicInteger(0);

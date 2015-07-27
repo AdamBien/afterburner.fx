@@ -38,10 +38,12 @@ import java.util.function.Function;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  *
  * @author adam-bien.com
+ * @author Mewes Kochheim
  */
 public class Injector {
 
@@ -109,13 +111,24 @@ public class Injector {
         return product;
     }
 
-    
+    /**
+     * Mimics the original behavior to increase backward compatibility
+     *
+     * @param clazz The class of the desired instance
+     * @return Instance with injected fields
+     */
+    public static <T> T instantiateModelOrService(Class<T> clazz) {
+        return instantiateModelOrService(clazz, true);
+    }
+
 	@SuppressWarnings("unchecked")
-	public static <T> T instantiateModelOrService(Class<T> clazz) {
+	public static <T> T instantiateModelOrService(Class<T> clazz, boolean singleton) {
 		T product = (T) modelsAndServices.get(clazz);
         if (product == null) {
             product = injectAndInitialize((T)instanceSupplier.apply(clazz));
-            modelsAndServices.putIfAbsent(clazz, product);
+            if (singleton) {
+                modelsAndServices.putIfAbsent(clazz, product);
+            }
         }
         return clazz.cast(product);
     }
@@ -147,7 +160,7 @@ public class Injector {
                 LOG.accept("Value returned by configurator is: " + value);
                 if (value == null && isNotPrimitiveOrString(type)) {
                     LOG.accept("Field is not a JDK class");
-                    value = instantiateModelOrService(type);
+                    value = instantiateModelOrService(type, type.isAnnotationPresent(Singleton.class));
                 }
                 if (value != null) {
                     LOG.accept("Value is a primitive, injecting...");
