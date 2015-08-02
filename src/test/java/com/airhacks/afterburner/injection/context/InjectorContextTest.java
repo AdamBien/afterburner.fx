@@ -1,4 +1,4 @@
-package com.airhacks.afterburner.injection.singleton;
+package com.airhacks.afterburner.injection.context;
 
 /*
  * #%L
@@ -21,8 +21,12 @@ package com.airhacks.afterburner.injection.singleton;
  */
 
 import com.airhacks.afterburner.injection.Injector;
+import com.airhacks.afterburner.injection.PresenterWithField;
 import org.junit.After;
 import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
@@ -30,21 +34,23 @@ import static org.junit.Assert.assertSame;
 /**
  * @author Mewes Kochheim
  */
-public class InjectorSingletonTest {
+public class InjectorContextTest {
 
     /**
-     * This will test singleton and regular injection
+     * This will test inherited injection contexts
      */
     @Test
     public void testInject() {
-        InitializableEntity entity1 = new InitializableEntity();
-        Injector.inject(entity1);
+        Service service = new Service();
 
-        InitializableEntity entity2 = new InitializableEntity();
-        Injector.inject(entity2);
+        Map<String, Object> injectionContext = new HashMap<>();
+        injectionContext.put("service", service);
 
-        assertSame(entity1.getServiceSingleton(), entity2.getServiceSingleton());
-        assertNotSame(entity1.getService(), entity2.getService());
+        InitializableEntity entity = new InitializableEntity();
+        Injector.inject(entity, injectionContext::get);
+
+        assertSame(entity.getService(), service);
+        assertSame(entity.getEntity().getService(), service);
     }
 
     @After

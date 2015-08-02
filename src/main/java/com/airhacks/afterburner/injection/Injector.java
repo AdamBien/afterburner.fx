@@ -25,6 +25,7 @@ import com.airhacks.afterburner.configuration.Configurator;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -168,9 +169,16 @@ public class Injector {
                 LOG.accept("Field annotated with @Inject found: " + field);
                 Class<?> type = field.getType();
                 String key = field.getName();
+                Object value = null;
 
                 // Try injection context
-                Object value = injectionContext.apply(field.getName());
+                if (field.isAnnotationPresent(Named.class)) {
+                    Named named = field.getAnnotation(Named.class);
+                    value = injectionContext.apply(named.value());
+                }
+                if (value == null) {
+                    value = injectionContext.apply(field.getName());
+                }
 
                 // Try configurator
                 if (value == null) {
