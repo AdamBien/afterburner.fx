@@ -51,17 +51,22 @@ public class Injector {
     // Public
 
     public static void forgetAll() {
-        Collection<Object> values = singletons.values();
-        values.stream().forEach(Injector::destroy);
+        singletons.values().stream().forEach(Injector::destroy);
+        singletons.clear();
+
         presenters.stream().forEach(Injector::destroy);
         presenters.clear();
-        singletons.clear();
+
         resetInstanceSupplier();
         resetConfigurationSource();
     }
 
     public static Consumer<String> getDefaultLogger() {
         return l -> {};
+    }
+
+    public static <T> void addSingleton(Class<T> clazz, T instance) {
+        singletons.put(clazz, instance);
     }
 
     public static <T> T initialize(final T instance) {
@@ -124,14 +129,6 @@ public class Injector {
         return instantiatePresenter(clazz, f -> null);
     }
 
-    public static void resetConfigurationSource() {
-        configurator.forgetAll();
-    }
-
-    public static void resetInstanceSupplier() {
-        instanceSupplier = getDefaultInstanceSupplier();
-    }
-
     public static void setConfigurationSource(Function<Object, Object> configurationSupplier) {
         configurator.set(configurationSupplier);
     }
@@ -142,10 +139,6 @@ public class Injector {
 
     public static void setLogger(Consumer<String> logger) {
         LOG = logger;
-    }
-
-    public static <T> void setModelOrService(Class<T> clazz, T instance) {
-        singletons.put(clazz, instance);
     }
 
     // Package private
@@ -239,5 +232,13 @@ public class Injector {
 
     static boolean isInstantiatable(Class<?> type) {
         return !type.isPrimitive() && !type.isAssignableFrom(String.class);
+    }
+
+    static void resetConfigurationSource() {
+        configurator.forgetAll();
+    }
+
+    static void resetInstanceSupplier() {
+        instanceSupplier = getDefaultInstanceSupplier();
     }
 }
