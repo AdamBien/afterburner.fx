@@ -86,9 +86,9 @@ public class InjectorTest {
 
     @Test
     public void forgetAllModels() {
-        Model first = Injector.instantiateModelOrService(Model.class);
+        Model first = Injector.instantiate(Model.class);
         Injector.forgetAll();
-        Model second = Injector.instantiateModelOrService(Model.class);
+        Model second = Injector.instantiate(Model.class);
         assertNotSame(first, second);
     }
 
@@ -96,20 +96,21 @@ public class InjectorTest {
     public void setInstanceSupplier() {
         Function<Class<?>, Object> provider = Mockito::mock;
         Injector.setInstanceSupplier(provider);
-        Object mock = Injector.instantiateModelOrService(Model.class);
+        Object mock = Injector.instantiate(Model.class);
         assertTrue(mock.getClass().getName().contains("ByMockito"));
         Injector.resetInstanceSupplier();
     }
 
     @Test
     public void productInitialization() {
-        InitializableProduct product = Injector.instantiatePresenter(InitializableProduct.class);
+        InitializableProduct product = Injector.instantiate(InitializableProduct.class);
         assertTrue(product.isInitialized());
     }
 
     @Test
     public void existingPresenterInitialization() {
-        InitializableProduct product = Injector.registerExistingAndInject(new InitializableProduct());
+        InitializableProduct product = new InitializableProduct();
+        Injector.injectAndInitialize(product);
         assertTrue(product.isInitialized());
     }
 

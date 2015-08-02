@@ -35,10 +35,10 @@ public class InjectorSingletonTest {
     @Test
     public void testInjectMembers() {
         InitializableEntity entity1 = new InitializableEntity();
-        Injector.injectMembers(InitializableEntity.class, entity1);
+        Injector.inject(entity1);
 
         InitializableEntity entity2 = new InitializableEntity();
-        Injector.injectMembers(InitializableEntity.class, entity2);
+        Injector.inject(entity2);
 
         assertSame(entity1.getServiceSingleton(), entity2.getServiceSingleton());
         assertNotSame(entity1.getService(), entity2.getService());

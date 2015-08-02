@@ -42,7 +42,7 @@ import java.util.function.Function;
  */
 public class Injector {
 
-    private static final Map<Class<?>, Object> modelsAndServices = new WeakHashMap<>();
+    private static final Map<Class<?>, Object> singletons = new WeakHashMap<>();
     private static final Set<Object> presenters = Collections.newSetFromMap(new WeakHashMap<>());
     private static final Configurator configurator = new Configurator();
     private static Function<Class<?>, Object> instanceSupplier = getDefaultInstanceSupplier();
@@ -51,11 +51,11 @@ public class Injector {
     // Public
 
     public static void forgetAll() {
-        Collection<Object> values = modelsAndServices.values();
+        Collection<Object> values = singletons.values();
         values.stream().forEach(Injector::destroy);
         presenters.stream().forEach(Injector::destroy);
         presenters.clear();
-        modelsAndServices.clear();
+        singletons.clear();
         resetInstanceSupplier();
         resetConfigurationSource();
     }
@@ -64,72 +64,64 @@ public class Injector {
         return l -> {};
     }
 
-    public static void injectMembers(Class<?> clazz, final Object instance, Function<String, Object> injectionContext) throws SecurityException {
-        LOG.accept("Injecting members for class " + clazz + " and instance " + instance);
-        Field[] fields = clazz.getDeclaredFields();
-        for (final Field field : fields) {
-            if (field.isAnnotationPresent(Inject.class)) {
-                LOG.accept("Field annotated with @Inject found: " + field);
-                Class<?> type = field.getType();
-                String key = field.getName();
-                Object value = configurator.getProperty(clazz, key);
-                LOG.accept("Value returned by configurator is: " + value);
-                if (value == null && isNotPrimitiveOrString(type)) {
-                    LOG.accept("Field is not a JDK class");
-                    value = instantiateModelOrService(type, injectionContext);
-                }
-                if (value != null) {
-                    LOG.accept("Value is a primitive, injecting...");
-                    injectIntoField(field, instance, value);
-                }
-            }
-        }
-        Class<?> superclass = clazz.getSuperclass();
-        if (superclass != null) {
-            LOG.accept("Injecting members of: " + superclass);
-            injectMembers(superclass, instance, injectionContext);
-        }
+    public static <T> T initialize(final T instance) {
+        invokeMethodWithAnnotation(instance.getClass(), instance, PostConstruct.class);
+        return instance;
     }
 
-    public static void injectMembers(Class<?> clazz, final Object instance) throws SecurityException {
-        injectMembers(clazz, instance, f -> null);
+    public static <T> T injectAndInitialize(final T instance, Function<String, Object> injectionContext) {
+        return initialize(inject(instance, injectionContext));
     }
 
-    public static <T> T instantiateModelOrService(Class<T> clazz, Function<String, Object> injectionContext) {
-        Object product = modelsAndServices.get(clazz);
-        if (product == null) {
-            product = injectAndInitialize(instanceSupplier.apply(clazz), injectionContext);
+    public static <T> T injectAndInitialize(final T instance) {
+        return injectAndInitialize(instance, f -> null);
+    }
+
+    public static <T> T inject(final T instance, Function<String, Object> injectionContext) throws SecurityException {
+        injectMembers(instance.getClass(), instance, injectionContext);
+        return instance;
+    }
+
+    public static <T> T inject(final T instance) throws SecurityException {
+        return inject(instance, f -> null);
+    }
+
+    public static <T> T instantiate(Class<T> clazz, Function<String, Object> injectionContext) {
+        Object instance = singletons.get(clazz);
+        if (instance == null) {
+            instance = injectAndInitialize(instanceSupplier.apply(clazz), injectionContext);
             if (clazz.isAnnotationPresent(Singleton.class)) {
-                modelsAndServices.putIfAbsent(clazz, product);
+                singletons.putIfAbsent(clazz, instance);
+            }
+        } else {
+            // Apply new injection context which may overrides previous contexts
+            Field[] fields = clazz.getDeclaredFields();
+            for (final Field field : fields) {
+                if (field.isAnnotationPresent(Inject.class)) {
+                    final String fieldName = field.getName();
+                    final Object value = injectionContext.apply(fieldName);
+                    if (value != null) {
+                        injectIntoField(field, instance, value);
+                    }
+                }
             }
         }
-        return clazz.cast(product);
+        return clazz.cast(instance);
     }
 
-    public static <T> T instantiateModelOrService(Class<T> clazz) {
-        return instantiateModelOrService(clazz, f -> null);
+    public static <T> T instantiate(Class<T> clazz) {
+        return instantiate(clazz, f -> null);
     }
 
     public static <T> T instantiatePresenter(Class<T> clazz, Function<String, Object> injectionContext) {
         @SuppressWarnings("unchecked")
-        T presenter = registerExistingAndInject((T) instanceSupplier.apply(clazz));
-        //after the regular, conventional initialization and injection, perform postinjection
-        applyInjectionContext(presenter, injectionContext);
+        T presenter = injectAndInitialize((T) instanceSupplier.apply(clazz), injectionContext);
+        presenters.add(presenter);
         return presenter;
     }
 
     public static <T> T instantiatePresenter(Class<T> clazz) {
         return instantiatePresenter(clazz, f -> null);
-    }
-
-    public static <T> T registerExistingAndInject(T instance, Function<String, Object> injectionContext) {
-        T product = injectAndInitialize(instance, injectionContext);
-        presenters.add(product);
-        return product;
-    }
-
-    public static <T> T registerExistingAndInject(T instance) {
-        return registerExistingAndInject(instance, f -> null);
     }
 
     public static void resetConfigurationSource() {
@@ -153,24 +145,10 @@ public class Injector {
     }
 
     public static <T> void setModelOrService(Class<T> clazz, T instance) {
-        modelsAndServices.put(clazz, instance);
+        singletons.put(clazz, instance);
     }
 
     // Package private
-
-    static <T> T applyInjectionContext(T instance, Function<String, Object> injectionContext) {
-        Field[] fields = instance.getClass().getDeclaredFields();
-        for (final Field field : fields) {
-            if (field.isAnnotationPresent(Inject.class)) {
-                final String fieldName = field.getName();
-                final Object value = injectionContext.apply(fieldName);
-                if (value != null) {
-                    injectIntoField(field, instance, value);
-                }
-            }
-        }
-        return instance;
-    }
 
     static void destroy(Object instance) {
         invokeMethodWithAnnotation(instance.getClass(), instance, PreDestroy.class);
@@ -186,16 +164,6 @@ public class Injector {
         };
     }
 
-    static void initialize(Object instance) {
-        invokeMethodWithAnnotation(instance.getClass(), instance, PostConstruct.class);
-    }
-
-    static <T> T injectAndInitialize(T product, Function<String, Object> injectionContext) {
-        injectMembers(product.getClass(), product, injectionContext);
-        initialize(product);
-        return product;
-    }
-
     static void injectIntoField(final Field field, final Object instance, final Object target) {
         AccessController.doPrivileged((PrivilegedAction<?>) () -> {
             boolean wasAccessible = field.isAccessible();
@@ -209,6 +177,41 @@ public class Injector {
                 field.setAccessible(wasAccessible);
             }
         });
+    }
+
+    static void injectMembers(Class<?> clazz, final Object instance, Function<String, Object> injectionContext) throws SecurityException {
+        LOG.accept("Injecting members for class " + clazz + " and instance " + instance);
+        Field[] fields = clazz.getDeclaredFields();
+        for (final Field field : fields) {
+            if (field.isAnnotationPresent(Inject.class)) {
+                LOG.accept("Field annotated with @Inject found: " + field);
+                Class<?> type = field.getType();
+                String key = field.getName();
+
+                // Try injection context
+                Object value = injectionContext.apply(field.getName());
+
+                // Try configurator
+                if (value == null) {
+                    value = configurator.getProperty(clazz, key);
+                }
+
+                // Try instantiating
+                if (value == null && isInstantiatable(type)) {
+                    value = instantiate(type, injectionContext);
+                }
+
+                // Inject value
+                if (value != null) {
+                    injectIntoField(field, instance, value);
+                }
+            }
+        }
+        Class<?> superclass = clazz.getSuperclass();
+        if (superclass != null) {
+            LOG.accept("Injecting members of: " + superclass);
+            injectMembers(superclass, instance, injectionContext);
+        }
     }
 
     static void invokeMethodWithAnnotation(Class<?> clazz, final Object instance, final Class<? extends Annotation> annotationClass) throws IllegalStateException, SecurityException {
@@ -234,7 +237,7 @@ public class Injector {
         }
     }
 
-    static boolean isNotPrimitiveOrString(Class<?> type) {
+    static boolean isInstantiatable(Class<?> type) {
         return !type.isPrimitive() && !type.isAssignableFrom(String.class);
     }
 }
