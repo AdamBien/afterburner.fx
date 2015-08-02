@@ -37,10 +37,10 @@ import static org.mockito.Mockito.*;
 /**
  *
  * @author adam-bien.com
+ * @author Mewes Kochheim
  */
 public class InjectorTest {
 
-    
 	@Test
     public void injection() {
         View view = Injector.instantiatePresenter(View.class);

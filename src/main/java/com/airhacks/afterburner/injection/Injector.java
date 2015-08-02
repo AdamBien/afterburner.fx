@@ -82,12 +82,12 @@ public class Injector {
         return injectAndInitialize(instance, f -> null);
     }
 
-    public static <T> T inject(final T instance, Function<String, Object> injectionContext) throws SecurityException {
+    public static <T> T inject(final T instance, Function<String, Object> injectionContext) {
         injectMembers(instance.getClass(), instance, injectionContext);
         return instance;
     }
 
-    public static <T> T inject(final T instance) throws SecurityException {
+    public static <T> T inject(final T instance) {
         return inject(instance, f -> null);
     }
 
@@ -97,18 +97,6 @@ public class Injector {
             instance = injectAndInitialize(instanceSupplier.apply(clazz), injectionContext);
             if (clazz.isAnnotationPresent(Singleton.class)) {
                 singletons.putIfAbsent(clazz, instance);
-            }
-        } else {
-            // Apply new injection context which may overrides previous contexts
-            Field[] fields = clazz.getDeclaredFields();
-            for (final Field field : fields) {
-                if (field.isAnnotationPresent(Inject.class)) {
-                    final String fieldName = field.getName();
-                    final Object value = injectionContext.apply(fieldName);
-                    if (value != null) {
-                        injectIntoField(field, instance, value);
-                    }
-                }
             }
         }
         return clazz.cast(instance);
@@ -172,7 +160,7 @@ public class Injector {
         });
     }
 
-    static void injectMembers(Class<?> clazz, final Object instance, Function<String, Object> injectionContext) throws SecurityException {
+    static void injectMembers(Class<?> clazz, final Object instance, Function<String, Object> injectionContext) {
         LOG.accept("Injecting members for class " + clazz + " and instance " + instance);
         Field[] fields = clazz.getDeclaredFields();
         for (final Field field : fields) {
