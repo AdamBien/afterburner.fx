@@ -42,31 +42,28 @@ import java.util.function.Function;
  */
 public class Injector {
 
-    private static final Map<Class<?>, Object> singletons = new WeakHashMap<>();
-    private static final Set<Object> presenters = Collections.newSetFromMap(new WeakHashMap<>());
+    private static final Map<Class<?>, Object> singletonMap = new WeakHashMap<>();
+    private static final Set<Object> destructableList = Collections.newSetFromMap(new WeakHashMap<>());
+
     private static final Configurator configurator = new Configurator();
     private static Function<Class<?>, Object> instanceSupplier = getDefaultInstanceSupplier();
-    private static Consumer<String> LOG = getDefaultLogger();
+    private static Consumer<String> LOG = l -> {};
 
     // Public
 
-    public static void forgetAll() {
-        singletons.values().stream().forEach(Injector::destroy);
-        singletons.clear();
+    public static <T> void addSingleton(Class<T> clazz, T instance) {
+        singletonMap.put(clazz, instance);
+    }
 
-        presenters.stream().forEach(Injector::destroy);
-        presenters.clear();
+    public static void forgetAll() {
+        singletonMap.values().stream().forEach(Injector::destroy);
+        singletonMap.clear();
+
+        destructableList.stream().forEach(Injector::destroy);
+        destructableList.clear();
 
         resetInstanceSupplier();
         resetConfigurationSource();
-    }
-
-    public static Consumer<String> getDefaultLogger() {
-        return l -> {};
-    }
-
-    public static <T> void addSingleton(Class<T> clazz, T instance) {
-        singletons.put(clazz, instance);
     }
 
     public static <T> T initialize(final T instance) {
@@ -92,11 +89,14 @@ public class Injector {
     }
 
     public static <T> T instantiate(Class<T> clazz, Function<String, Object> injectionContext) {
-        Object instance = singletons.get(clazz);
+        Object instance = singletonMap.get(clazz);
         if (instance == null) {
             instance = injectAndInitialize(instanceSupplier.apply(clazz), injectionContext);
             if (clazz.isAnnotationPresent(Singleton.class)) {
-                singletons.putIfAbsent(clazz, instance);
+                singletonMap.putIfAbsent(clazz, instance);
+            }
+            else if (hasMethodWithAnnotation(clazz, PreDestroy.class)) {
+                destructableList.add(instance);
             }
         }
         return clazz.cast(instance);
@@ -104,17 +104,6 @@ public class Injector {
 
     public static <T> T instantiate(Class<T> clazz) {
         return instantiate(clazz, f -> null);
-    }
-
-    public static <T> T instantiatePresenter(Class<T> clazz, Function<String, Object> injectionContext) {
-        @SuppressWarnings("unchecked")
-        T presenter = injectAndInitialize((T) instanceSupplier.apply(clazz), injectionContext);
-        presenters.add(presenter);
-        return presenter;
-    }
-
-    public static <T> T instantiatePresenter(Class<T> clazz) {
-        return instantiatePresenter(clazz, f -> null);
     }
 
     public static void setConfigurationSource(Function<Object, Object> configurationSupplier) {
@@ -143,6 +132,17 @@ public class Injector {
                 throw new IllegalStateException("Cannot instantiate view: " + c, ex);
             }
         };
+    }
+
+    static boolean hasMethodWithAnnotation(Class<?> clazz, final Class<? extends Annotation> annotationClass) throws IllegalStateException, SecurityException {
+        Method[] declaredMethods = clazz.getDeclaredMethods();
+        for (final Method method : declaredMethods) {
+            if (method.isAnnotationPresent(annotationClass)) {
+                return true;
+            }
+        }
+        Class<?> superclass = clazz.getSuperclass();
+        return superclass != null && hasMethodWithAnnotation(superclass, annotationClass);
     }
 
     static void injectIntoField(final Field field, final Object instance, final Object target) {

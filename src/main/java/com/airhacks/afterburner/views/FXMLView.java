@@ -86,7 +86,7 @@ public abstract class FXMLView {
 
     FXMLLoader loadSynchronously(final URL resource, ResourceBundle bundle, final String conventionalName) throws IllegalStateException {
         final FXMLLoader loader = new FXMLLoader(resource, bundle);
-        loader.setControllerFactory((Class<?> p) -> Injector.instantiatePresenter(p, this.injectionContext));
+        loader.setControllerFactory((Class<?> p) -> Injector.instantiate(p, this.injectionContext));
         try {
             loader.load();
         } catch (IOException ex) {

@@ -43,33 +43,33 @@ public class InjectorTest {
 
 	@Test
     public void injection() {
-        View view = Injector.instantiatePresenter(View.class);
+        View view = Injector.instantiate(View.class);
         Boundary boundary = view.getBoundary();
         assertNotNull(boundary);
         assertThat(boundary.getNumberOfInstances(), is(1));
         @SuppressWarnings("unused")
-        AnotherView another = Injector.instantiatePresenter(AnotherView.class);
+        AnotherView another = Injector.instantiate(AnotherView.class);
         assertThat(boundary.getNumberOfInstances(), is(1));
     }
 
     @Test
     public void perInstanceInitialization() {
-        View first = Injector.instantiatePresenter(View.class);
-        View second = Injector.instantiatePresenter(View.class);
+        View first = Injector.instantiate(View.class);
+        View second = Injector.instantiate(View.class);
         assertNotSame(first, second);
     }
 
     @Test
     public void forgetAllPresenters() {
-        Presenter first = Injector.instantiatePresenter(Presenter.class);
+        Presenter first = Injector.instantiate(Presenter.class);
         Injector.forgetAll();
-        Presenter second = Injector.instantiatePresenter(Presenter.class);
+        Presenter second = Injector.instantiate(Presenter.class);
         assertNotSame(first, second);
     }
 
     @Test
     public void injectionContextWithEmptyContext() {
-        PresenterWithField withField = Injector.instantiatePresenter(PresenterWithField.class);
+        PresenterWithField withField = Injector.instantiate(PresenterWithField.class);
         assertNull(withField.getName());
         Injector.forgetAll();
     }
@@ -79,7 +79,7 @@ public class InjectorTest {
         String expected = "hello duke";
         Map<String, Object> injectionContext = new HashMap<>();
         injectionContext.put("name", expected);
-        PresenterWithField withField = Injector.instantiatePresenter(PresenterWithField.class, injectionContext::get);
+        PresenterWithField withField = Injector.instantiate(PresenterWithField.class, injectionContext::get);
         assertThat(withField.getName(), is(expected));
         Injector.forgetAll();
     }
@@ -116,7 +116,7 @@ public class InjectorTest {
 
     @Test
     public void productDestruction() {
-        DestructibleProduct product = Injector.instantiatePresenter(DestructibleProduct.class);
+        DestructibleProduct product = Injector.instantiate(DestructibleProduct.class);
         assertFalse(product.isDestroyed());
         Injector.forgetAll();
         assertTrue(product.isDestroyed());
