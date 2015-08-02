@@ -65,7 +65,7 @@ public class ConfiguratorTest {
 
     @Test
     public void loggerPassed() {
-        this.cut.setLogger((l) -> System.out.println(l));
+        this.cut.setLogger(System.out::println);
     }
 
     @Test

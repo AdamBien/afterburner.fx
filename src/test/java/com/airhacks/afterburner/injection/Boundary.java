@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Singleton
 public class Boundary {
 
-    static AtomicInteger INSTANCE_COUNT = new AtomicInteger(0);
+    final static AtomicInteger INSTANCE_COUNT = new AtomicInteger(0);
 
     public Boundary() {
         INSTANCE_COUNT.incrementAndGet();

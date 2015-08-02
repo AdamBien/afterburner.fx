@@ -188,7 +188,7 @@ public abstract class FXMLView {
      * @param presenterConsumer listener for the presenter construction
      */
     public void getPresenter(Consumer<Object> presenterConsumer) {
-        this.presenterProperty.addListener((ObservableValue<? extends Object> o, Object oldValue, Object newValue) -> {
+        this.presenterProperty.addListener((ObservableValue<?> o, Object oldValue, Object newValue) -> {
             presenterConsumer.accept(newValue);
         });
     }

@@ -19,6 +19,11 @@ package com.airhacks.afterburner.injection;
  * limitations under the License.
  * #L%
  */
+
+import org.junit.After;
+import org.junit.Test;
+import org.mockito.Mockito;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,25 +31,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static org.hamcrest.CoreMatchers.is;
-
-import org.junit.After;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
-
-import static org.mockito.Matchers.anyString;
-
-import org.mockito.Mockito;
-
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 /**
  *
@@ -106,7 +94,7 @@ public class InjectorTest {
 
     @Test
     public void setInstanceSupplier() {
-        Function<Class<?>, Object> provider = t -> Mockito.mock(t);
+        Function<Class<?>, Object> provider = Mockito::mock;
         Injector.setInstanceSupplier(provider);
         Object mock = Injector.instantiateModelOrService(Model.class);
         assertTrue(mock.getClass().getName().contains("ByMockito"));
@@ -137,14 +125,14 @@ public class InjectorTest {
     public void systemPropertiesInjectionOfExistingProperty() {
         final String expected = "42";
         System.setProperty("shouldExist", expected);
-        SystemProperties systemProperties = Injector.injectAndInitialize(new SystemProperties());
+        SystemProperties systemProperties = Injector.injectAndInitialize(new SystemProperties(), f -> null);
         String actual = systemProperties.getShouldExist();
         assertThat(actual, is(expected));
     }
 
     @Test
     public void systemPropertiesInjectionOfNotExistingProperty() {
-        SystemProperties systemProperties = Injector.injectAndInitialize(new SystemProperties());
+        SystemProperties systemProperties = Injector.injectAndInitialize(new SystemProperties(), f -> null);
         String actual = systemProperties.getDoesNotExists();
         assertNull(actual);
     }
@@ -153,7 +141,7 @@ public class InjectorTest {
     public void longInjectionWithCustomProvider() {
         long expected = 42;
         Injector.setConfigurationSource((f) -> expected);
-        CustomProperties systemProperties = Injector.injectAndInitialize(new CustomProperties());
+        CustomProperties systemProperties = Injector.injectAndInitialize(new CustomProperties(), f -> null);
         long actual = systemProperties.getNumber();
         assertThat(actual, is(expected));
     }
@@ -161,7 +149,7 @@ public class InjectorTest {
     @Test
     public void longInjectionOfNotExistingProperty() {
         long expected = 0;
-        CustomProperties systemProperties = Injector.injectAndInitialize(new CustomProperties());
+        CustomProperties systemProperties = Injector.injectAndInitialize(new CustomProperties(), f -> null);
         long actual = systemProperties.getNumber();
         assertThat(actual, is(expected));
     }
@@ -170,14 +158,14 @@ public class InjectorTest {
     public void dateInjectionWithCustomProvider() {
         Date expected = new Date();
         Injector.setConfigurationSource((f) -> expected);
-        DateProperties systemProperties = Injector.injectAndInitialize(new DateProperties());
+        DateProperties systemProperties = Injector.injectAndInitialize(new DateProperties(), f -> null);
         Date actual = systemProperties.getCustomDate();
         assertThat(actual, is(expected));
     }
 
     @Test
     public void dateInjectionOfNotExistingProperty() {
-        DateProperties systemProperties = Injector.injectAndInitialize(new DateProperties());
+        DateProperties systemProperties = Injector.injectAndInitialize(new DateProperties(), f -> null);
         Date actual = systemProperties.getCustomDate();
         //java.util.Date is not a primitive, or String. Can be created and injected.
         assertNotNull(actual);
@@ -188,7 +176,7 @@ public class InjectorTest {
 		@SuppressWarnings("unchecked")
         Consumer<String> logger = mock(Consumer.class);
         Injector.setLogger(logger);
-        Injector.injectAndInitialize(new DateProperties());
+        Injector.injectAndInitialize(new DateProperties(), f -> null);
         verify(logger, atLeastOnce()).accept(anyString());
     }
 
