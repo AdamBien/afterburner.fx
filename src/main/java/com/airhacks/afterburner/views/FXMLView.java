@@ -39,6 +39,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.util.Callback;
 
 /**
  * @author adam-bien.com
@@ -46,6 +47,7 @@ import javafx.scene.Parent;
 public abstract class FXMLView {
 
     public final static String DEFAULT_ENDING = "view";
+
     protected ObjectProperty<Object> presenterProperty;
     protected FXMLLoader fxmlLoader;
     protected String bundleName;
@@ -86,7 +88,7 @@ public abstract class FXMLView {
 
     FXMLLoader loadSynchronously(final URL resource, ResourceBundle bundle, final String conventionalName) throws IllegalStateException {
         final FXMLLoader loader = new FXMLLoader(resource, bundle);
-        loader.setControllerFactory((Class<?> p) -> Injector.instantiate(p, this.injectionContext));
+        loader.setControllerFactory(getControllerFactory());
         try {
             loader.load();
         } catch (IOException ex) {
@@ -100,6 +102,16 @@ public abstract class FXMLView {
             this.fxmlLoader = this.loadSynchronously(resource, bundle, bundleName);
             this.presenterProperty.set(this.fxmlLoader.getController());
         }
+    }
+
+    /**
+     * Returns the controller factory for FXMLLoader.
+     * Override this method to change the dependency injection implementation.
+     *
+     * @return The controller factory
+     */
+    public Callback<Class<?>, Object> getControllerFactory() {
+        return (Class<?> p) -> Injector.instantiate(p, injectionContext);
     }
 
     /**
