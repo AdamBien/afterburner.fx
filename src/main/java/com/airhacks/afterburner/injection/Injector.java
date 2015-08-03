@@ -173,11 +173,17 @@ public class Injector {
 
                 // Try injection context
                 if (field.isAnnotationPresent(Named.class)) {
+                    // Inject by name
                     Named named = field.getAnnotation(Named.class);
                     value = injectionContext.apply(named.value());
                 }
                 if (value == null) {
+                    // Inject by field name
                     value = injectionContext.apply(field.getName());
+                }
+                if (value == null) {
+                    // Inject by type
+                    value = injectionContext.apply(field.getType().getName());
                 }
 
                 // Try configurator

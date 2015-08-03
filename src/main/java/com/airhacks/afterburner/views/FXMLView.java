@@ -22,8 +22,8 @@ package com.airhacks.afterburner.views;
 import com.airhacks.afterburner.injection.Injector;
 import java.io.IOException;
 import java.net.URL;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+import java.util.*;
+
 import static java.util.ResourceBundle.getBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -61,18 +61,33 @@ public abstract class FXMLView {
     });
 
     /**
-     * Constructs the view lazily (fxml is not loaded) with empty injection
-     * context.
+     * Constructs the view lazily (fxml is not loaded).
      */
     public FXMLView() {
         this(f -> null);
     }
 
     /**
+     * Constructs the view lazily (fxml is not loaded).
      *
-     * @param injectionContext the function is used as a injection source.
-     * Values matching for the keys are going to be used for injection into the
-     * corresponding presenter.
+     * @param injectedValues A list of values used as a injection source. Values matching a type are going to be used
+     *                       for injection into the corresponding presenter all its injected members.
+     */
+    public FXMLView(Object... injectedValues) {
+        Map<String, Object> injectionMap = new HashMap<>();
+        for (Object injectedValue : injectedValues) {
+            injectionMap.put(injectedValue.getClass().getName(), injectedValue);
+        }
+        this.injectionContext = injectionMap::get;
+        this.init(getClass(), getFXMLName());
+    }
+
+    /**
+     * Constructs the view lazily (fxml is not loaded).
+     *
+     * @param injectionContext the function is used as a injection source. Values matching a name, a field name or a
+     *                         type are going to be used for injection into the corresponding presenter all its
+     *                         injected members.
      */
     public FXMLView(Function<String, Object> injectionContext) {
         this.injectionContext = injectionContext;
