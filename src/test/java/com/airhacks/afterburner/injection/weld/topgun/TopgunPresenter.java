@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.airhacks.afterburner.lifecycle;
+package com.airhacks.afterburner.injection.weld.topgun;
 
 /*
  * #%L
@@ -35,35 +35,43 @@ package com.airhacks.afterburner.lifecycle;
  * #L%
  */
 
-import javax.inject.Singleton;
-import java.util.concurrent.atomic.AtomicInteger;
+import javafx.fxml.Initializable;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.net.URL;
+import java.util.ResourceBundle;
 
 /**
+ * FXML Controller class
  *
  * @author adam-bien.com
  */
-@Singleton
-public class ConcreteModel extends AbstractModel {
+@ApplicationScoped
+public class TopgunPresenter implements Initializable {
 
-    private final AtomicInteger initializationCounter = new AtomicInteger(0);
-    private final AtomicInteger destructionCounter = new AtomicInteger(0);
+    @Inject
+    GunService gs;
 
+    ResourceBundle rb;
+
+    /**
+     * Initializes the controller class.
+     */
     @Override
-    public void init() {
-        initializationCounter.incrementAndGet();
+    public void initialize(URL url, ResourceBundle rb) {
+        this.rb = rb;
     }
 
-    @Override
-    public void destroy() {
-        destructionCounter.incrementAndGet();
+    public String getMessageFromGun() {
+        return gs.fireAndForget();
     }
 
-    public int getInitializationCount() {
-        return this.initializationCounter.get();
+    public ResourceBundle getResourceBundle() {
+        return rb;
     }
 
-    public int getDestructionCount() {
-        return this.destructionCounter.get();
+    public GunService getGunService() {
+        return gs;
     }
-
 }

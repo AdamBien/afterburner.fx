@@ -22,8 +22,8 @@ package com.airhacks.afterburner.views;
 import com.airhacks.afterburner.injection.Injector;
 import java.io.IOException;
 import java.net.URL;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+import java.util.*;
+
 import static java.util.ResourceBundle.getBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -39,6 +39,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.util.Callback;
 
 /**
  * @author adam-bien.com
@@ -46,6 +47,7 @@ import javafx.scene.Parent;
 public abstract class FXMLView {
 
     public final static String DEFAULT_ENDING = "view";
+
     protected ObjectProperty<Object> presenterProperty;
     protected FXMLLoader fxmlLoader;
     protected String bundleName;
@@ -59,18 +61,33 @@ public abstract class FXMLView {
     });
 
     /**
-     * Constructs the view lazily (fxml is not loaded) with empty injection
-     * context.
+     * Constructs the view lazily (fxml is not loaded).
      */
     public FXMLView() {
         this(f -> null);
     }
 
     /**
+     * Constructs the view lazily (fxml is not loaded).
      *
-     * @param injectionContext the function is used as a injection source.
-     * Values matching for the keys are going to be used for injection into the
-     * corresponding presenter.
+     * @param injectedValues A list of values used as a injection source. Values matching a type are going to be used
+     *                       for injection into the corresponding presenter all its injected members.
+     */
+    public FXMLView(Object... injectedValues) {
+        Map<String, Object> injectionMap = new HashMap<>();
+        for (Object injectedValue : injectedValues) {
+            injectionMap.put(injectedValue.getClass().getName(), injectedValue);
+        }
+        this.injectionContext = injectionMap::get;
+        this.init(getClass(), getFXMLName());
+    }
+
+    /**
+     * Constructs the view lazily (fxml is not loaded).
+     *
+     * @param injectionContext the function is used as a injection source. Values matching a name, a field name or a
+     *                         type are going to be used for injection into the corresponding presenter all its
+     *                         injected members.
      */
     public FXMLView(Function<String, Object> injectionContext) {
         this.injectionContext = injectionContext;
@@ -86,7 +103,7 @@ public abstract class FXMLView {
 
     FXMLLoader loadSynchronously(final URL resource, ResourceBundle bundle, final String conventionalName) throws IllegalStateException {
         final FXMLLoader loader = new FXMLLoader(resource, bundle);
-        loader.setControllerFactory((Class<?> p) -> Injector.instantiatePresenter(p, this.injectionContext));
+        loader.setControllerFactory(getControllerFactory());
         try {
             loader.load();
         } catch (IOException ex) {
@@ -100,6 +117,16 @@ public abstract class FXMLView {
             this.fxmlLoader = this.loadSynchronously(resource, bundle, bundleName);
             this.presenterProperty.set(this.fxmlLoader.getController());
         }
+    }
+
+    /**
+     * Returns the controller factory for FXMLLoader.
+     * Override this method to change the dependency injection implementation.
+     *
+     * @return The controller factory
+     */
+    public Callback<Class<?>, Object> getControllerFactory() {
+        return (Class<?> p) -> Injector.instantiate(p, injectionContext);
     }
 
     /**
@@ -188,7 +215,7 @@ public abstract class FXMLView {
      * @param presenterConsumer listener for the presenter construction
      */
     public void getPresenter(Consumer<Object> presenterConsumer) {
-        this.presenterProperty.addListener((ObservableValue<? extends Object> o, Object oldValue, Object newValue) -> {
+        this.presenterProperty.addListener((ObservableValue<?> o, Object oldValue, Object newValue) -> {
             presenterConsumer.accept(newValue);
         });
     }

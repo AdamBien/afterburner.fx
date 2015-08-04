@@ -1,4 +1,9 @@
-package com.airhacks.afterburner.injection;
+package com.airhacks.afterburner.injection.weld.topgun;
+
+import com.airhacks.afterburner.views.FXMLView;
+import javafx.util.Callback;
+import org.jboss.weld.environment.se.Weld;
+import org.jboss.weld.environment.se.WeldContainer;
 
 /*
  * #%L
@@ -20,23 +25,17 @@ package com.airhacks.afterburner.injection;
  * #L%
  */
 
-import javax.inject.Singleton;
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  *
- * @author adam-bien.com
+ * @author Mewes Kochheim
  */
-@Singleton
-public class Boundary {
+public class TopgunView extends FXMLView {
 
-    final static AtomicInteger INSTANCE_COUNT = new AtomicInteger(0);
-
-    public Boundary() {
-        INSTANCE_COUNT.incrementAndGet();
-    }
-
-    public int getNumberOfInstances() {
-        return INSTANCE_COUNT.get();
+    @Override
+    public Callback<Class<?>, Object> getControllerFactory() {
+        return (Class<?> clazz) -> {
+            WeldContainer weldContainer = new Weld().initialize();
+            return weldContainer.instance().select(clazz).get();
+        };
     }
 }

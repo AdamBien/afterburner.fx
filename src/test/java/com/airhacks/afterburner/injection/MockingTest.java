@@ -66,7 +66,7 @@ public class MockingTest {
 
     @Test
     public void mockIsActive() {
-        Injector.setModelOrService(GunService.class, new GunService() {
+        Injector.addSingleton(GunService.class, new GunService() {
 
             @Override
             public String fireAndForget() {

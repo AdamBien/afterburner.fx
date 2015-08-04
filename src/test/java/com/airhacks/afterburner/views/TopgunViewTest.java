@@ -143,15 +143,11 @@ public class TopgunViewTest {
     }
 
     Function<String, Object> getInjectionContext(String fieldName, Object value) {
-        return new Function<String, Object>() {
-
-            @Override
-            public Object apply(String key) {
-                if (fieldName.equalsIgnoreCase(key)) {
-                    return value;
-                }
-                return null;
+        return key -> {
+            if (fieldName.equalsIgnoreCase(key)) {
+                return value;
             }
+            return null;
         };
     }
 

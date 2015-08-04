@@ -19,61 +19,96 @@ package com.airhacks.afterburner.injection;
  * limitations under the License.
  * #L%
  */
+
 import com.airhacks.afterburner.configuration.Configurator;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
-
 /**
- *
  * @author adam-bien.com
+ * @author Mewes Kochheim
  */
 public class Injector {
 
-    private static final Map<Class<?>, Object> modelsAndServices = new WeakHashMap<>();
-    private static final Set<Object> presenters = Collections.newSetFromMap(new WeakHashMap<>());
-
-    private static Function<Class<?>, Object> instanceSupplier = getDefaultInstanceSupplier();
-
-    private static Consumer<String> LOG = getDefaultLogger();
+    private static final Map<Class<?>, Object> singletonMap = new WeakHashMap<>();
+    private static final Set<Object> destructableList = Collections.newSetFromMap(new WeakHashMap<>());
 
     private static final Configurator configurator = new Configurator();
+    private static Function<Class<?>, Object> instanceSupplier = getDefaultInstanceSupplier();
+    private static Consumer<String> LOG = l -> {};
 
-    
-	public static <T> T instantiatePresenter(Class<T> clazz, Function<String, Object> injectionContext) {
-		@SuppressWarnings("unchecked")
-		T presenter = registerExistingAndInject( (T)instanceSupplier.apply(clazz));
-        //after the regular, conventional initialization and injection, perform postinjection
-        Field[] fields = clazz.getDeclaredFields();
-        for (final Field field : fields) {
-            if (field.isAnnotationPresent(Inject.class)) {
-                final String fieldName = field.getName();
-                final Object value = injectionContext.apply(fieldName);
-                if (value != null) {
-                    injectIntoField(field, presenter, value);
-                }
-            }
-        }
-        return presenter;
+    // Public
+
+    public static <T> void addSingleton(Class<T> clazz, T instance) {
+        singletonMap.put(clazz, instance);
     }
 
-    public static <T> T instantiatePresenter(Class<T> clazz) {
-        return instantiatePresenter(clazz, f -> null);
+    public static void forgetAll() {
+        singletonMap.values().stream().forEach(Injector::destroy);
+        singletonMap.clear();
+
+        destructableList.stream().forEach(Injector::destroy);
+        destructableList.clear();
+
+        resetInstanceSupplier();
+        resetConfigurationSource();
+    }
+
+    public static <T> T initialize(final T instance) {
+        invokeMethodWithAnnotation(instance.getClass(), instance, PostConstruct.class);
+        return instance;
+    }
+
+    public static <T> T injectAndInitialize(final T instance, Function<String, Object> injectionContext) {
+        return initialize(inject(instance, injectionContext));
+    }
+
+    public static <T> T injectAndInitialize(final T instance) {
+        return injectAndInitialize(instance, f -> null);
+    }
+
+    public static <T> T inject(final T instance, Function<String, Object> injectionContext) {
+        injectMembers(instance.getClass(), instance, injectionContext);
+        return instance;
+    }
+
+    public static <T> T inject(final T instance) {
+        return inject(instance, f -> null);
+    }
+
+    public static <T> T instantiate(Class<T> clazz, Function<String, Object> injectionContext) {
+        Object instance = singletonMap.get(clazz);
+        if (instance == null) {
+            instance = injectAndInitialize(instanceSupplier.apply(clazz), injectionContext);
+            if (clazz.isAnnotationPresent(Singleton.class)) {
+                singletonMap.putIfAbsent(clazz, instance);
+            }
+            else if (hasMethodWithAnnotation(clazz, PreDestroy.class)) {
+                destructableList.add(instance);
+            }
+        }
+        return clazz.cast(instance);
+    }
+
+    public static <T> T instantiate(Class<T> clazz) {
+        return instantiate(clazz, f -> null);
+    }
+
+    public static void setConfigurationSource(Function<Object, Object> configurationSupplier) {
+        configurator.set(configurationSupplier);
     }
 
     public static void setInstanceSupplier(Function<Class<?>, Object> instanceSupplier) {
@@ -84,85 +119,34 @@ public class Injector {
         LOG = logger;
     }
 
-    public static void setConfigurationSource(Function<Object, Object> configurationSupplier) {
-        configurator.set(configurationSupplier);
+    // Package private
+
+    static void destroy(Object instance) {
+        invokeMethodWithAnnotation(instance.getClass(), instance, PreDestroy.class);
     }
 
-    public static void resetInstanceSupplier() {
-        instanceSupplier = getDefaultInstanceSupplier();
+    static Function<Class<?>, Object> getDefaultInstanceSupplier() {
+        return (c) -> {
+            try {
+                return c.newInstance();
+            } catch (InstantiationException | IllegalAccessException ex) {
+                throw new IllegalStateException("Cannot instantiate view: " + c, ex);
+            }
+        };
     }
 
-    public static void resetConfigurationSource() {
-        configurator.forgetAll();
-    }
-
-    /**
-     * Caches the passed presenter internally and injects all fields
-     *
-     * @param instance An already existing (legacy) presenter interesting in
-     * injection
-     * @return presenter with injected fields
-     */
-    public static <T> T registerExistingAndInject(T instance) {
-        T product = injectAndInitialize(instance);
-        presenters.add(product);
-        return product;
-    }
-
-    
-	@SuppressWarnings("unchecked")
-	public static <T> T instantiateModelOrService(Class<T> clazz) {
-		T product = (T) modelsAndServices.get(clazz);
-        if (product == null) {
-            product = injectAndInitialize((T)instanceSupplier.apply(clazz));
-            modelsAndServices.putIfAbsent(clazz, product);
-        }
-        return clazz.cast(product);
-    }
-
-    public static <T> void setModelOrService(Class<T> clazz, T instance) {
-        modelsAndServices.put(clazz, instance);
-    }
-
-    static <T> T injectAndInitialize(T product) {
-        injectMembers(product);
-        initialize(product);
-        return product;
-    }
-
-    static void injectMembers(final Object instance) {
-        Class<? extends Object> clazz = instance.getClass();
-        injectMembers(clazz, instance);
-    }
-
-    public static void injectMembers(Class<? extends Object> clazz, final Object instance) throws SecurityException {
-        LOG.accept("Injecting members for class " + clazz + " and instance " + instance);
-        Field[] fields = clazz.getDeclaredFields();
-        for (final Field field : fields) {
-            if (field.isAnnotationPresent(Inject.class)) {
-                LOG.accept("Field annotated with @Inject found: " + field);
-                Class<?> type = field.getType();
-                String key = field.getName();
-                Object value = configurator.getProperty(clazz, key);
-                LOG.accept("Value returned by configurator is: " + value);
-                if (value == null && isNotPrimitiveOrString(type)) {
-                    LOG.accept("Field is not a JDK class");
-                    value = instantiateModelOrService(type);
-                }
-                if (value != null) {
-                    LOG.accept("Value is a primitive, injecting...");
-                    injectIntoField(field, instance, value);
-                }
+    static boolean hasMethodWithAnnotation(Class<?> clazz, final Class<? extends Annotation> annotationClass) throws IllegalStateException, SecurityException {
+        Method[] declaredMethods = clazz.getDeclaredMethods();
+        for (final Method method : declaredMethods) {
+            if (method.isAnnotationPresent(annotationClass)) {
+                return true;
             }
         }
-        Class<? extends Object> superclass = clazz.getSuperclass();
-        if (superclass != null) {
-            LOG.accept("Injecting members of: " + superclass);
-            injectMembers(superclass, instance);
-        }
+        Class<?> superclass = clazz.getSuperclass();
+        return superclass != null && hasMethodWithAnnotation(superclass, annotationClass);
     }
 
-	static void injectIntoField(final Field field, final Object instance, final Object target) {
+    static void injectIntoField(final Field field, final Object instance, final Object target) {
         AccessController.doPrivileged((PrivilegedAction<?>) () -> {
             boolean wasAccessible = field.isAccessible();
             try {
@@ -177,27 +161,63 @@ public class Injector {
         });
     }
 
-    static void initialize(Object instance) {
-        Class<? extends Object> clazz = instance.getClass();
-        invokeMethodWithAnnotation(clazz, instance, PostConstruct.class
-        );
-    }
+    static void injectMembers(Class<?> clazz, final Object instance, Function<String, Object> injectionContext) {
+        LOG.accept("Injecting members for class " + clazz + " and instance " + instance);
+        Field[] fields = clazz.getDeclaredFields();
+        for (final Field field : fields) {
+            if (field.isAnnotationPresent(Inject.class)) {
+                LOG.accept("Field annotated with @Inject found: " + field);
+                Class<?> type = field.getType();
+                String key = field.getName();
+                Object value = null;
 
-    static void destroy(Object instance) {
-        Class<? extends Object> clazz = instance.getClass();
-        invokeMethodWithAnnotation(clazz, instance, PreDestroy.class
-        );
+                // Try injection context
+                if (field.isAnnotationPresent(Named.class)) {
+                    // Inject by name
+                    Named named = field.getAnnotation(Named.class);
+                    value = injectionContext.apply(named.value());
+                }
+                if (value == null) {
+                    // Inject by field name
+                    value = injectionContext.apply(field.getName());
+                }
+                if (value == null) {
+                    // Inject by type
+                    value = injectionContext.apply(field.getType().getName());
+                }
+
+                // Try configurator
+                if (value == null) {
+                    value = configurator.getProperty(clazz, key);
+                }
+
+                // Try instantiating
+                if (value == null && isInstantiatable(type)) {
+                    value = instantiate(type, injectionContext);
+                }
+
+                // Inject value
+                if (value != null) {
+                    injectIntoField(field, instance, value);
+                }
+            }
+        }
+        Class<?> superclass = clazz.getSuperclass();
+        if (superclass != null) {
+            LOG.accept("Injecting members of: " + superclass);
+            injectMembers(superclass, instance, injectionContext);
+        }
     }
 
     static void invokeMethodWithAnnotation(Class<?> clazz, final Object instance, final Class<? extends Annotation> annotationClass) throws IllegalStateException, SecurityException {
         Method[] declaredMethods = clazz.getDeclaredMethods();
         for (final Method method : declaredMethods) {
             if (method.isAnnotationPresent(annotationClass)) {
-                AccessController.doPrivileged((PrivilegedAction<?>) () -> {
+                AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
                     boolean wasAccessible = method.isAccessible();
                     try {
                         method.setAccessible(true);
-                        return method.invoke(instance, new Object[]{});
+                        return method.invoke(instance);
                     } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                         throw new IllegalStateException("Problem invoking " + annotationClass + " : " + method, ex);
                     } finally {
@@ -212,36 +232,15 @@ public class Injector {
         }
     }
 
-    public static void forgetAll() {
-        Collection<Object> values = modelsAndServices.values();
-        values.stream().forEach((object) -> {
-            destroy(object);
-        });
-        presenters.stream().forEach((object) -> {
-            destroy(object);
-        });
-        presenters.clear();
-        modelsAndServices.clear();
-        resetInstanceSupplier();
-        resetConfigurationSource();
-    }
-
-    static Function<Class<?>, Object> getDefaultInstanceSupplier() {
-        return (c) -> {
-            try {
-                return c.newInstance();
-            } catch (InstantiationException | IllegalAccessException ex) {
-                throw new IllegalStateException("Cannot instantiate view: " + c, ex);
-            }
-        };
-    }
-
-    public static Consumer<String> getDefaultLogger() {
-        return l -> {
-        };
-    }
-
-    private static boolean isNotPrimitiveOrString(Class<?> type) {
+    static boolean isInstantiatable(Class<?> type) {
         return !type.isPrimitive() && !type.isAssignableFrom(String.class);
+    }
+
+    static void resetConfigurationSource() {
+        configurator.forgetAll();
+    }
+
+    static void resetInstanceSupplier() {
+        instanceSupplier = getDefaultInstanceSupplier();
     }
 }

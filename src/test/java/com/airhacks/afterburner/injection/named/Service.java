@@ -1,10 +1,10 @@
-package com.airhacks.afterburner.injection;
+package com.airhacks.afterburner.injection.named;
 
 /*
  * #%L
  * afterburner.fx
  * %%
- * Copyright (C) 2013 Adam Bien
+ * Copyright (C) 2013 - 2015 Adam Bien
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,23 +20,8 @@ package com.airhacks.afterburner.injection;
  * #L%
  */
 
-import javax.inject.Singleton;
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
- *
- * @author adam-bien.com
+ * @author Mewes Kochheim
  */
-@Singleton
-public class Boundary {
-
-    final static AtomicInteger INSTANCE_COUNT = new AtomicInteger(0);
-
-    public Boundary() {
-        INSTANCE_COUNT.incrementAndGet();
-    }
-
-    public int getNumberOfInstances() {
-        return INSTANCE_COUNT.get();
-    }
+public class Service {
 }
