@@ -9,9 +9,9 @@ package com.airhacks.afterburner.views;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -45,7 +45,7 @@ import javafx.scene.Parent;
  */
 public abstract class FXMLView {
 
-    public final static String DEFAULT_ENDING = "view";
+    public final static String DEFAULT_ENDING = "View";
     protected ObjectProperty<Object> presenterProperty;
     protected FXMLLoader fxmlLoader;
     protected String bundleName;
@@ -74,12 +74,12 @@ public abstract class FXMLView {
      */
     public FXMLView(Function<String, Object> injectionContext) {
         this.injectionContext = injectionContext;
-        this.init(getClass(), getFXMLName());
+        this.init(getFXMLName());
     }
 
-    private void init(Class<?> clazz, final String conventionalName) {
+    private void init(final String conventionalName) {
         this.presenterProperty = new SimpleObjectProperty<>();
-        this.resource = clazz.getResource(conventionalName);
+        this.resource = getClass().getResource(conventionalName);
         this.bundleName = getBundleName();
         this.bundle = getResourceBundle(bundleName);
     }
@@ -163,7 +163,7 @@ public abstract class FXMLView {
     }
 
     String getStyleSheetName() {
-        return getConventionalName(".css");
+        return getConventionalName(true, ".css");
     }
 
     /**
@@ -195,25 +195,31 @@ public abstract class FXMLView {
 
     /**
      *
+     * @param lowercase indicates whether the simple class name should be
+     * converted to lowercase of left unchanged
      * @param ending the suffix to append
      * @return the conventional name with stripped ending
      */
-    protected String getConventionalName(String ending) {
-        return getConventionalName() + ending;
+    protected String getConventionalName(boolean lowercase, String ending) {
+        return getConventionalName(lowercase) + ending;
     }
 
     /**
      *
-     * @return the name of the view without the "View" prefix in lowerCase. For
-     * AirhacksView just airhacks is going to be returned.
+     * @param lowercase indicates whether the simple class name should be
+     * @return the name of the view without the "View" prefix.
      */
-    protected String getConventionalName() {
-        String clazz = this.getClass().getSimpleName().toLowerCase();
-        return stripEnding(clazz);
+    protected String getConventionalName(boolean lowercase) {
+        final String clazzWithEnding = this.getClass().getSimpleName();
+        String clazz = stripEnding(clazzWithEnding);
+        if (lowercase) {
+            clazz = clazz.toLowerCase();
+        }
+        return clazz;
     }
 
     String getBundleName() {
-        String conventionalName = getConventionalName();
+        String conventionalName = getConventionalName(true);
         return this.getClass().getPackage().getName() + "." + conventionalName;
     }
 
@@ -231,7 +237,22 @@ public abstract class FXMLView {
      * name for the AirhacksView is going to be airhacks.fxml.
      */
     final String getFXMLName() {
-        return getConventionalName(".fxml");
+        String name = getConventionalName(true, ".fxml");
+        URL found = getClass().getResource(name);
+        if (found != null) {
+            return name;
+        }
+        System.err.println("FXML file: " + name + " not found, attempting with camel case");
+        name = getConventionalName(false, ".fxml");
+        found = getClass().getResource(name);
+        if (found == null) {
+            final String message = "Cannot load FXML file " + name;
+            System.err.println(message);
+            System.err.println("Stopping initialization phase...");
+            throw new IllegalStateException(message);
+        }
+        return name;
+
     }
 
     public static ResourceBundle getResourceBundle(String name) {
