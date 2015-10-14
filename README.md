@@ -30,3 +30,5 @@ The current development version is available as snapshot:
 See also: [http://afterburner.adam-bien.com](http://afterburner.adam-bien.com)
 
 Simplistic example:  [https://github.com/AdamBien/followme.fx](https://github.com/AdamBien/followme.fx)
+
+Deploying afterburner.fx applications: [https://github.com/AdamBien/airfield/](https://github.com/AdamBien/airfield/)
