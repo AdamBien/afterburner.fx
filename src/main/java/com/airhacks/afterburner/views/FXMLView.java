@@ -39,6 +39,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import static java.util.ResourceBundle.getBundle;
 
 /**
  * @author adam-bien.com
@@ -163,7 +164,34 @@ public abstract class FXMLView {
     }
 
     String getStyleSheetName() {
-        return getConventionalName(true, ".css");
+        return getResourceCamelOrLowerCase(".css");
+    }
+
+    /**
+     *
+     * @return the name of the fxml file derived from the FXML view. e.g. The
+     * name for the AirhacksView is going to be airhacks.fxml.
+     */
+    final String getFXMLName() {
+        return getResourceCamelOrLowerCase(".fxml");
+    }
+
+    String getResourceCamelOrLowerCase(String ending) {
+        String name = getConventionalName(true, ending);
+        URL found = getClass().getResource(name);
+        if (found != null) {
+            return name;
+        }
+        System.err.println("File: " + name + " not found, attempting with camel case");
+        name = getConventionalName(false, ending);
+        found = getClass().getResource(name);
+        if (found == null) {
+            final String message = "Cannot load file " + name;
+            System.err.println(message);
+            System.err.println("Stopping initialization phase...");
+            throw new IllegalStateException(message);
+        }
+        return name;
     }
 
     /**
@@ -229,30 +257,6 @@ public abstract class FXMLView {
         }
         int viewIndex = clazz.lastIndexOf(DEFAULT_ENDING);
         return clazz.substring(0, viewIndex);
-    }
-
-    /**
-     *
-     * @return the name of the fxml file derived from the FXML view. e.g. The
-     * name for the AirhacksView is going to be airhacks.fxml.
-     */
-    final String getFXMLName() {
-        String name = getConventionalName(true, ".fxml");
-        URL found = getClass().getResource(name);
-        if (found != null) {
-            return name;
-        }
-        System.err.println("FXML file: " + name + " not found, attempting with camel case");
-        name = getConventionalName(false, ".fxml");
-        found = getClass().getResource(name);
-        if (found == null) {
-            final String message = "Cannot load FXML file " + name;
-            System.err.println(message);
-            System.err.println("Stopping initialization phase...");
-            throw new IllegalStateException(message);
-        }
-        return name;
-
     }
 
     public static ResourceBundle getResourceBundle(String name) {
