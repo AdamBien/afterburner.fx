@@ -39,7 +39,6 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import static java.util.ResourceBundle.getBundle;
 
 /**
  * @author adam-bien.com
@@ -164,7 +163,7 @@ public abstract class FXMLView {
     }
 
     String getStyleSheetName() {
-        return getResourceCamelOrLowerCase(".css");
+        return getResourceCamelOrLowerCase(false, ".css");
     }
 
     /**
@@ -173,10 +172,10 @@ public abstract class FXMLView {
      * name for the AirhacksView is going to be airhacks.fxml.
      */
     final String getFXMLName() {
-        return getResourceCamelOrLowerCase(".fxml");
+        return getResourceCamelOrLowerCase(true, ".fxml");
     }
 
-    String getResourceCamelOrLowerCase(String ending) {
+    String getResourceCamelOrLowerCase(boolean mandatory, String ending) {
         String name = getConventionalName(true, ending);
         URL found = getClass().getResource(name);
         if (found != null) {
@@ -185,7 +184,7 @@ public abstract class FXMLView {
         System.err.println("File: " + name + " not found, attempting with camel case");
         name = getConventionalName(false, ending);
         found = getClass().getResource(name);
-        if (found == null) {
+        if (mandatory && found == null) {
             final String message = "Cannot load file " + name;
             System.err.println(message);
             System.err.println("Stopping initialization phase...");
