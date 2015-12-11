@@ -89,10 +89,15 @@ public class InjectorTest {
     @Test
     public void injectionContextWithMathingKey() {
         String expected = "hello duke";
+        String nameWithDots = "This is a name with dots";
         Map<String, Object> injectionContext = new HashMap<>();
         injectionContext.put("name", expected);
+        injectionContext.put(PresenterWithField.NAME_WITH_DOTS, nameWithDots);
+        
         PresenterWithField withField = Injector.instantiatePresenter(PresenterWithField.class, injectionContext::get);
         assertThat(withField.getName(), is(expected));
+        assertThat(withField.getNameWithDots(), is(nameWithDots));
+        
         Injector.forgetAll();
     }
 
@@ -136,10 +141,14 @@ public class InjectorTest {
     @Test
     public void systemPropertiesInjectionOfExistingProperty() {
         final String expected = "42";
+        final String systemPropertyWithDots = "This is a system property with dots";
         System.setProperty("shouldExist", expected);
+        System.setProperty(SystemProperties.SYSTEM_PROPERTY_WITH_DOTS, systemPropertyWithDots);
+        
         SystemProperties systemProperties = Injector.injectAndInitialize(new SystemProperties());
         String actual = systemProperties.getShouldExist();
         assertThat(actual, is(expected));
+        assertThat(systemProperties.getSystemPropertyWithDots(), is(systemPropertyWithDots));
     }
 
     @Test
@@ -185,7 +194,7 @@ public class InjectorTest {
     
 	@Test
     public void logging() {
-		@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
         Consumer<String> logger = mock(Consumer.class);
         Injector.setLogger(logger);
         Injector.injectAndInitialize(new DateProperties());

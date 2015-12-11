@@ -36,6 +36,7 @@ package com.airhacks.afterburner.injection;
  */
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -43,11 +44,17 @@ import javax.inject.Inject;
  */
 public class SystemProperties {
 
+    public final static String SYSTEM_PROPERTY_WITH_DOTS = "system.property.with.dots";
+    
     @Inject
     private String shouldExist;
 
     @Inject
     private String doesNotExists;
+    
+    @Inject
+    @Named(SYSTEM_PROPERTY_WITH_DOTS)
+    private String systemPropertyWithDots;
 
     public String getShouldExist() {
         return shouldExist;
@@ -55,6 +62,10 @@ public class SystemProperties {
 
     public String getDoesNotExists() {
         return doesNotExists;
+    }
+    
+    public String getSystemPropertyWithDots() {
+        return systemPropertyWithDots;
     }
 
 }

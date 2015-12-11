@@ -36,18 +36,29 @@ package com.airhacks.afterburner.injection;
  */
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
  * @author airhacks.com
  */
 public class PresenterWithField {
+    
+    public final static String NAME_WITH_DOTS = "name.with.dots";
 
     @Inject
     private String name;
+    
+    @Inject
+    @Named(NAME_WITH_DOTS)
+    private String nameWithDots;
 
     public String getName() {
         return name;
+    }
+    
+    public String getNameWithDots() {
+        return nameWithDots;
     }
 
 }
