@@ -38,6 +38,7 @@ import java.util.function.Function;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -54,15 +55,19 @@ public class Injector {
 
     private static final Configurator configurator = new Configurator();
 
-    
-	public static <T> T instantiatePresenter(Class<T> clazz, Function<String, Object> injectionContext) {
-		@SuppressWarnings("unchecked")
-		T presenter = registerExistingAndInject( (T)instanceSupplier.apply(clazz));
+    public static <T> T instantiatePresenter(Class<T> clazz, Function<String, Object> injectionContext) {
+        @SuppressWarnings("unchecked")
+        T presenter = registerExistingAndInject( (T)instanceSupplier.apply(clazz));
         //after the regular, conventional initialization and injection, perform postinjection
         Field[] fields = clazz.getDeclaredFields();
         for (final Field field : fields) {
             if (field.isAnnotationPresent(Inject.class)) {
-                final String fieldName = field.getName();
+                String fieldName = field.getName();
+                if (field.isAnnotationPresent(Named.class)) {
+                    LOG.accept("Field annotated with @Named found: " + field);
+                    final Named named = field.getAnnotation(Named.class);
+                    fieldName = named.value();
+                }
                 final Object value = injectionContext.apply(fieldName);
                 if (value != null) {
                     injectIntoField(field, presenter, value);
@@ -109,10 +114,9 @@ public class Injector {
         return product;
     }
 
-    
-	@SuppressWarnings("unchecked")
-	public static <T> T instantiateModelOrService(Class<T> clazz) {
-		T product = (T) modelsAndServices.get(clazz);
+    @SuppressWarnings("unchecked")
+    public static <T> T instantiateModelOrService(Class<T> clazz) {
+	T product = (T) modelsAndServices.get(clazz);
         if (product == null) {
             product = injectAndInitialize((T)instanceSupplier.apply(clazz));
             modelsAndServices.putIfAbsent(clazz, product);
@@ -143,6 +147,11 @@ public class Injector {
                 LOG.accept("Field annotated with @Inject found: " + field);
                 Class<?> type = field.getType();
                 String key = field.getName();
+                if (field.isAnnotationPresent(Named.class)) {
+                    LOG.accept("Field annotated with @Named found: " + field);
+                    final Named named = field.getAnnotation(Named.class);
+                    key = named.value();
+                }
                 Object value = configurator.getProperty(clazz, key);
                 LOG.accept("Value returned by configurator is: " + value);
                 if (value == null && isNotPrimitiveOrString(type)) {
@@ -162,7 +171,7 @@ public class Injector {
         }
     }
 
-	static void injectIntoField(final Field field, final Object instance, final Object target) {
+    static void injectIntoField(final Field field, final Object instance, final Object target) {
         AccessController.doPrivileged((PrivilegedAction<?>) () -> {
             boolean wasAccessible = field.isAccessible();
             try {
