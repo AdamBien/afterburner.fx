@@ -22,6 +22,7 @@ package com.airhacks.afterburner.views;
 import com.airhacks.afterburner.injection.Injector;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import static java.util.ResourceBundle.getBundle;
@@ -57,23 +58,51 @@ public abstract class FXMLView {
         thread.setDaemon(true);
         return thread;
     });
+    
+    private Locale localeToLowerCase = Locale.ENGLISH;
 
     /**
      * Constructs the view lazily (fxml is not loaded) with empty injection
-     * context.
+     * context and Locale.ENGLISH for the name converting.
      */
     public FXMLView() {
-        this(f -> null);
+        this(Locale.ENGLISH);
+    }
+    
+    /**
+     * Constructs the view lazily (fxml is not loaded) with empty injection
+     * context.
+     * 
+     * @param localeToLowerCase The locale for the name converting.
+     */
+    public FXMLView(Locale localeToLowerCase) {
+        this(f -> null, localeToLowerCase);
     }
 
     /**
+     * Constructs the view lazily (fxml is not loaded) and Locale.ENGLISH for 
+     * the name converting.
      *
      * @param injectionContext the function is used as a injection source.
      * Values matching for the keys are going to be used for injection into the
      * corresponding presenter.
      */
     public FXMLView(Function<String, Object> injectionContext) {
+        this(injectionContext, Locale.ENGLISH);
+    }
+    
+    /**
+     * Constructs the view lazily (fxml is not loaded).
+     * 
+     * @param injectionContext the function is used as a injection source.
+     * Values matching for the keys are going to be used for injection into the
+     * corresponding presenter.
+     * @param localeToLowerCase The locale for the name converting.
+     */
+    public FXMLView(Function<String, Object> injectionContext, Locale localeToLowerCase) {
         this.injectionContext = injectionContext;
+        this.localeToLowerCase = localeToLowerCase;
+        
         this.init(getFXMLName());
     }
 
@@ -221,26 +250,46 @@ public abstract class FXMLView {
     }
 
     /**
+     * Returns the conventional name.
      *
      * @param lowercase indicates whether the simple class name should be
-     * converted to lowercase of left unchanged
-     * @param ending the suffix to append
-     * @return the conventional name with stripped ending
+     * converted to lowercase or left unchanged. Use the parameter 
+     * {@code localeToLowerCase} for the to lowercase converting.
+     * @param ending the suffix to append.
+     * 
+     * @return the conventional name with stripped ending.
      */
     protected String getConventionalName(boolean lowercase, String ending) {
-        return getConventionalName(lowercase) + ending;
+        return getConventionalName(lowercase, localeToLowerCase) + ending;
     }
 
     /**
+     * Returns the conventional name.
      *
      * @param lowercase indicates whether the simple class name should be
-     * @return the name of the view without the "View" prefix.
+     * converted to lowercase or left unchanged. Use the parameter 
+     * {@code localeToLowerCase} for the to lowercase converting.
+     * 
+     * @return the name of the view without the "View" suffix.
      */
     protected String getConventionalName(boolean lowercase) {
+        return getConventionalName(lowercase, localeToLowerCase);
+    }
+    
+    /**
+     * 
+     * @param lowercase indicates whether the simple class name should be
+     * converted to lowercase or left unchanged.
+     * @param locale Converts all of the characters in this {@code String} to lower
+     * case using the rules of the given {@code Locale}.
+     * 
+     * @return the name of the view without the "View" suffix.
+     */
+    String getConventionalName(boolean lowercase, Locale locale) {
         final String clazzWithEnding = this.getClass().getSimpleName();
         String clazz = stripEnding(clazzWithEnding);
         if (lowercase) {
-            clazz = clazz.toLowerCase();
+            clazz = clazz.toLowerCase(locale);
         }
         return clazz;
     }
