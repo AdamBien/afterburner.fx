@@ -96,6 +96,16 @@ public class InjectorTest {
         Injector.forgetAll();
     }
 
+	@Test
+	public void injectionContextWithNoBeanOrPrimitive() {
+		NotABean expected = new NotABean(25);
+		Map<String, Object> injectionContext = new HashMap<>();
+		injectionContext.put("name", expected);
+		PresenterWithNotABeanField withField = Injector.instantiatePresenter(PresenterWithNotABeanField.class, injectionContext::get);
+		assertThat(withField.getName(), is(expected));
+		Injector.forgetAll();
+	}
+
     @Test
     public void forgetAllModels() {
         Model first = Injector.instantiateModelOrService(Model.class);
