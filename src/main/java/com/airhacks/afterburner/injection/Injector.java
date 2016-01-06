@@ -58,17 +58,6 @@ public class Injector {
 	public static <T> T instantiatePresenter(Class<T> clazz, Function<String, Object> injectionContext) {
 		@SuppressWarnings("unchecked")
 		T presenter = registerExistingAndInject( (T)instanceSupplier.apply(clazz), injectionContext);
-        //after the regular, conventional initialization and injection, perform postinjection
-        Field[] fields = clazz.getDeclaredFields();
-        for (final Field field : fields) {
-            if (field.isAnnotationPresent(Inject.class)) {
-                final String fieldName = field.getName();
-                final Object value = injectionContext.apply(fieldName);
-                if (value != null) {
-                    injectIntoField(field, presenter, value);
-                }
-            }
-        }
         return presenter;
     }
 
