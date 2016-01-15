@@ -57,6 +57,7 @@ public abstract class FXMLView {
         thread.setDaemon(true);
         return thread;
     });
+    private static Consumer<Throwable> LOG;
 
     /**
      * Constructs the view lazily (fxml is not loaded) with empty injection
@@ -124,7 +125,11 @@ public abstract class FXMLView {
     public void getView(Consumer<Parent> consumer) {
         Supplier<Parent> supplier = this::getView;
         Executor fxExecutor = Platform::runLater;
-        CompletableFuture.supplyAsync(supplier, fxExecutor).thenAccept(consumer);
+        CompletableFuture.supplyAsync(supplier, fxExecutor).thenAccept(consumer)
+            .exceptionally(throwable -> {
+              LOG.accept(throwable);
+              return null;
+            });
     }
 
     /**
@@ -274,4 +279,7 @@ public abstract class FXMLView {
         return this.bundle;
     }
 
+    public static void setDefaultExceptionLogger(Consumer<Throwable> throwableConsumer){
+      LOG = throwableConsumer;
+    }
 }
