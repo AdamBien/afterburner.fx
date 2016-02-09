@@ -21,9 +21,9 @@ package com.airhacks.afterburner.injection;
  */
 
 public class NotABean {
-	private int someProperty;
+    private int someProperty;
 
-	public NotABean(int someProperty) {
-		this.someProperty = someProperty;
-	}
+    public NotABean(int someProperty) {
+        this.someProperty = someProperty;
+    }
 }

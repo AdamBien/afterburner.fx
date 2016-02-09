@@ -38,10 +38,10 @@ package com.airhacks.afterburner.injection;
 import javax.inject.Inject;
 
 public class PresenterWithNotABeanField {
-	@Inject
-	private NotABean name;
+    @Inject
+    private NotABean name;
 
-	public NotABean getName() {
-		return name;
-	}
+    public NotABean getName() {
+        return name;
+    }
 }
