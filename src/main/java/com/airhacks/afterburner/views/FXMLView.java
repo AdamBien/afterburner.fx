@@ -56,11 +56,7 @@ public abstract class FXMLView extends StackPane {
     protected URL resource;
     protected static Executor FX_PLATFORM_EXECUTOR = Platform::runLater;
 
-    protected final static ExecutorService PARENT_CREATION_POOL = Executors.newCachedThreadPool(runnable -> {
-        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-        thread.setDaemon(true);
-        return thread;
-    });
+    protected final static ExecutorService PARENT_CREATION_POOL = getExecutorService();
 
     /**
      * Constructs the view lazily (fxml is not loaded) with empty injection
@@ -139,7 +135,8 @@ public abstract class FXMLView extends StackPane {
      */
     public void getViewAsync(Consumer<Parent> consumer) {
         Supplier<Parent> supplier = this::getView;
-        CompletableFuture.supplyAsync(supplier).thenAcceptAsync(consumer, FX_PLATFORM_EXECUTOR);
+        CompletableFuture.supplyAsync(supplier, PARENT_CREATION_POOL).
+                thenAcceptAsync(consumer, FX_PLATFORM_EXECUTOR);
     }
 
     /**
@@ -276,6 +273,16 @@ public abstract class FXMLView extends StackPane {
      */
     public ResourceBundle getResourceBundle() {
         return this.bundle;
+    }
+
+    static ExecutorService getExecutorService() {
+        return Executors.newCachedThreadPool((r) -> {
+            Thread thread = Executors.defaultThreadFactory().newThread(r);
+            String name = thread.getName();
+            thread.setName("afterburner.fx-" + name);
+            thread.setDaemon(true);
+            return thread;
+        });
     }
 
 }
