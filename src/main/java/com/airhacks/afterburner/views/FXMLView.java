@@ -9,9 +9,9 @@ package com.airhacks.afterburner.views;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,6 +27,7 @@ import java.util.ResourceBundle;
 import static java.util.ResourceBundle.getBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -52,7 +53,7 @@ public abstract class FXMLView {
     protected ResourceBundle bundle;
     protected final Function<String, Object> injectionContext;
     protected URL resource;
-    protected final static Executor PARENT_CREATION_POOL = Executors.newCachedThreadPool(runnable -> {
+    protected final static ExecutorService PARENT_CREATION_POOL = Executors.newCachedThreadPool(runnable -> {
         Thread thread = Executors.defaultThreadFactory().newThread(runnable);
         thread.setDaemon(true);
         return thread;
