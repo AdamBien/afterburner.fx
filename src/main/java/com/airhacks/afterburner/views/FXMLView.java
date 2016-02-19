@@ -9,9 +9,9 @@ package com.airhacks.afterburner.views;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -54,6 +54,8 @@ public abstract class FXMLView extends StackPane {
     protected ResourceBundle bundle;
     protected final Function<String, Object> injectionContext;
     protected URL resource;
+    protected static Executor FX_PLATFORM_EXECUTOR = Platform::runLater;
+
     protected final static ExecutorService PARENT_CREATION_POOL = Executors.newCachedThreadPool(runnable -> {
         Thread thread = Executors.defaultThreadFactory().newThread(runnable);
         thread.setDaemon(true);
@@ -125,19 +127,19 @@ public abstract class FXMLView extends StackPane {
      */
     public void getView(Consumer<Parent> consumer) {
         Supplier<Parent> supplier = this::getView;
-        Executor fxExecutor = Platform::runLater;
-        CompletableFuture.supplyAsync(supplier, fxExecutor).thenAccept(consumer);
+        CompletableFuture.supplyAsync(supplier, FX_PLATFORM_EXECUTOR).thenAccept(consumer);
     }
 
     /**
      * Creates the view asynchronously using an internal thread pool and passes
-     * the parent node withing the UI Thread.
+     * the parent node within the UI Thread.
      *
      *
      * @param consumer - an object interested in received the Parent as callback
      */
     public void getViewAsync(Consumer<Parent> consumer) {
-        PARENT_CREATION_POOL.execute(() -> getView(consumer));
+        Supplier<Parent> supplier = this::getView;
+        CompletableFuture.supplyAsync(supplier).thenAcceptAsync(consumer, FX_PLATFORM_EXECUTOR);
     }
 
     /**
