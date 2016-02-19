@@ -26,6 +26,7 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import static java.util.ResourceBundle.getBundle;
 import java.util.concurrent.CompletableFuture;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,6 +42,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.layout.StackPane;
+import static java.util.ResourceBundle.getBundle;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 /**
  * @author adam-bien.com
@@ -123,7 +126,9 @@ public abstract class FXMLView extends StackPane {
      */
     public void getView(Consumer<Parent> consumer) {
         Supplier<Parent> supplier = this::getView;
-        CompletableFuture.supplyAsync(supplier, FX_PLATFORM_EXECUTOR).thenAccept(consumer);
+        supplyAsync(supplier, FX_PLATFORM_EXECUTOR).
+                thenAccept(consumer).
+                exceptionally(this::exceptionReporter);
     }
 
     /**
@@ -136,7 +141,9 @@ public abstract class FXMLView extends StackPane {
     public void getViewAsync(Consumer<Parent> consumer) {
         Supplier<Parent> supplier = this::getView;
         CompletableFuture.supplyAsync(supplier, PARENT_CREATION_POOL).
-                thenAcceptAsync(consumer, FX_PLATFORM_EXECUTOR);
+                thenAcceptAsync(consumer, FX_PLATFORM_EXECUTOR).
+                exceptionally(this::exceptionReporter);
+
     }
 
     /**
@@ -283,6 +290,16 @@ public abstract class FXMLView extends StackPane {
             thread.setDaemon(true);
             return thread;
         });
+    }
+
+    /**
+     *
+     * @param t exception to report
+     * @return nothing
+     */
+    public Void exceptionReporter(Throwable t) {
+        System.err.println(t);
+        return null;
     }
 
 }
