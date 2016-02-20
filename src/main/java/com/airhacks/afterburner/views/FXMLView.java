@@ -59,14 +59,14 @@ public abstract class FXMLView {
         return thread;
     });
     
-    private Locale localeToLowerCase = Locale.ENGLISH;
+    private Locale localeToLowerCase = Locale.getDefault();
 
     /**
      * Constructs the view lazily (fxml is not loaded) with empty injection
-     * context and Locale.ENGLISH for the name converting.
+     * context and {@link java.util.Locale#getDefault()} for the name converting.
      */
     public FXMLView() {
-        this(Locale.ENGLISH);
+        this(Locale.getDefault());
     }
     
     /**
@@ -80,15 +80,15 @@ public abstract class FXMLView {
     }
 
     /**
-     * Constructs the view lazily (fxml is not loaded) and Locale.ENGLISH for 
-     * the name converting.
+     * Constructs the view lazily (fxml is not loaded) and {@link java.util.Locale#getDefault()} 
+     * for the name converting.
      *
      * @param injectionContext the function is used as a injection source.
      * Values matching for the keys are going to be used for injection into the
      * corresponding presenter.
      */
     public FXMLView(Function<String, Object> injectionContext) {
-        this(injectionContext, Locale.ENGLISH);
+        this(injectionContext, Locale.getDefault());
     }
     
     /**
