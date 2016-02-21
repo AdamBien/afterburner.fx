@@ -42,8 +42,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.layout.StackPane;
-import static java.util.ResourceBundle.getBundle;
-import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 /**
  * @author adam-bien.com
