@@ -53,7 +53,7 @@ import static org.mockito.Mockito.verify;
 public class InjectorTest {
 
     
-	@Test
+    @Test
     public void injection() {
         View view = Injector.instantiatePresenter(View.class);
         Boundary boundary = view.getBoundary();
@@ -92,6 +92,16 @@ public class InjectorTest {
         Map<String, Object> injectionContext = new HashMap<>();
         injectionContext.put("name", expected);
         PresenterWithField withField = Injector.instantiatePresenter(PresenterWithField.class, injectionContext::get);
+        assertThat(withField.getName(), is(expected));
+        Injector.forgetAll();
+    }
+
+    @Test
+    public void injectionContextWithNoBeanOrPrimitive() {
+        NotABean expected = new NotABean(25);
+        Map<String, Object> injectionContext = new HashMap<>();
+        injectionContext.put("name", expected);
+        PresenterWithNotABeanField withField = Injector.instantiatePresenter(PresenterWithNotABeanField.class, injectionContext::get);
         assertThat(withField.getName(), is(expected));
         Injector.forgetAll();
     }
@@ -183,9 +193,9 @@ public class InjectorTest {
         assertNotNull(actual);
     }
     
-	@Test
+    @Test
     public void logging() {
-		@SuppressWarnings("unchecked")
+        @SuppressWarnings("unchecked")
         Consumer<String> logger = mock(Consumer.class);
         Injector.setLogger(logger);
         Injector.injectAndInitialize(new DateProperties());

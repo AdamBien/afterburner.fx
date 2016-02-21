@@ -55,20 +55,9 @@ public class Injector {
     private static final Configurator configurator = new Configurator();
 
     
-	public static <T> T instantiatePresenter(Class<T> clazz, Function<String, Object> injectionContext) {
-		@SuppressWarnings("unchecked")
-		T presenter = registerExistingAndInject( (T)instanceSupplier.apply(clazz));
-        //after the regular, conventional initialization and injection, perform postinjection
-        Field[] fields = clazz.getDeclaredFields();
-        for (final Field field : fields) {
-            if (field.isAnnotationPresent(Inject.class)) {
-                final String fieldName = field.getName();
-                final Object value = injectionContext.apply(fieldName);
-                if (value != null) {
-                    injectIntoField(field, presenter, value);
-                }
-            }
-        }
+    public static <T> T instantiatePresenter(Class<T> clazz, Function<String, Object> injectionContext) {
+        @SuppressWarnings("unchecked")
+        T presenter = registerExistingAndInject( (T)instanceSupplier.apply(clazz), injectionContext);
         return presenter;
     }
 
@@ -104,15 +93,19 @@ public class Injector {
      * @return presenter with injected fields
      */
     public static <T> T registerExistingAndInject(T instance) {
-        T product = injectAndInitialize(instance);
+        return registerExistingAndInject(instance, null);
+    }
+
+    public static <T> T registerExistingAndInject(T instance, Function<String, Object> additionalInjectionContext) {
+        T product = injectAndInitialize(instance, additionalInjectionContext);
         presenters.add(product);
         return product;
     }
 
     
-	@SuppressWarnings("unchecked")
-	public static <T> T instantiateModelOrService(Class<T> clazz) {
-		T product = (T) modelsAndServices.get(clazz);
+    @SuppressWarnings("unchecked")
+    public static <T> T instantiateModelOrService(Class<T> clazz) {
+        T product = (T) modelsAndServices.get(clazz);
         if (product == null) {
             product = injectAndInitialize((T)instanceSupplier.apply(clazz));
             modelsAndServices.putIfAbsent(clazz, product);
@@ -125,17 +118,30 @@ public class Injector {
     }
 
     static <T> T injectAndInitialize(T product) {
-        injectMembers(product);
+        return injectAndInitialize(product, null);
+    }
+
+
+    static <T> T injectAndInitialize(T product, Function<String, Object> additionalInjectionContext) {
+        injectMembers(product, additionalInjectionContext);
         initialize(product);
         return product;
     }
 
     static void injectMembers(final Object instance) {
+        injectMembers(instance, null);
+    }
+
+    static void injectMembers(final Object instance, Function<String, Object> additionalInjectionContext) {
         Class<? extends Object> clazz = instance.getClass();
-        injectMembers(clazz, instance);
+        injectMembers(clazz, instance, additionalInjectionContext);
     }
 
     public static void injectMembers(Class<? extends Object> clazz, final Object instance) throws SecurityException {
+        injectMembers(clazz, instance, null);
+    }
+
+    public static void injectMembers(Class<? extends Object> clazz, final Object instance, Function<String, Object> additionalInjectionContext) throws SecurityException {
         LOG.accept("Injecting members for class " + clazz + " and instance " + instance);
         Field[] fields = clazz.getDeclaredFields();
         for (final Field field : fields) {
@@ -143,12 +149,19 @@ public class Injector {
                 LOG.accept("Field annotated with @Inject found: " + field);
                 Class<?> type = field.getType();
                 String key = field.getName();
-                Object value = configurator.getProperty(clazz, key);
-                LOG.accept("Value returned by configurator is: " + value);
-                if (value == null && isNotPrimitiveOrString(type)) {
-                    LOG.accept("Field is not a JDK class");
-                    value = instantiateModelOrService(type);
+                Object value = null;
+                if (additionalInjectionContext != null) {
+                    value = additionalInjectionContext.apply(key);
                 }
+                if (additionalInjectionContext == null || value == null) {
+                    value = configurator.getProperty(clazz, key);
+                    LOG.accept("Value returned by configurator is: " + value);
+                    if (value == null && isNotPrimitiveOrString(type)) {
+                        LOG.accept("Field is not a JDK class");
+                        value = instantiateModelOrService(type);
+                    }
+                }
+
                 if (value != null) {
                     LOG.accept("Value is a primitive, injecting...");
                     injectIntoField(field, instance, value);
@@ -162,7 +175,7 @@ public class Injector {
         }
     }
 
-	static void injectIntoField(final Field field, final Object instance, final Object target) {
+    static void injectIntoField(final Field field, final Object instance, final Object target) {
         AccessController.doPrivileged((PrivilegedAction<?>) () -> {
             boolean wasAccessible = field.isAccessible();
             try {
