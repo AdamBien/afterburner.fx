@@ -131,11 +131,11 @@ public class Injector {
     }
 
     static void injectMembers(final Object instance) {
-        Class<? extends Object> clazz = instance.getClass();
+        Class<?> clazz = instance.getClass();
         injectMembers(clazz, instance);
     }
 
-    public static void injectMembers(Class<? extends Object> clazz, final Object instance) throws SecurityException {
+    public static void injectMembers(Class<?> clazz, final Object instance) throws SecurityException {
         LOG.accept("Injecting members for class " + clazz + " and instance " + instance);
         Field[] fields = clazz.getDeclaredFields();
         for (final Field field : fields) {
@@ -155,7 +155,7 @@ public class Injector {
                 }
             }
         }
-        Class<? extends Object> superclass = clazz.getSuperclass();
+        Class<?> superclass = clazz.getSuperclass();
         if (superclass != null) {
             LOG.accept("Injecting members of: " + superclass);
             injectMembers(superclass, instance);
@@ -178,13 +178,13 @@ public class Injector {
     }
 
     static void initialize(Object instance) {
-        Class<? extends Object> clazz = instance.getClass();
+        Class<?> clazz = instance.getClass();
         invokeMethodWithAnnotation(clazz, instance, PostConstruct.class
         );
     }
 
     static void destroy(Object instance) {
-        Class<? extends Object> clazz = instance.getClass();
+        Class<?> clazz = instance.getClass();
         invokeMethodWithAnnotation(clazz, instance, PreDestroy.class
         );
     }
@@ -197,7 +197,7 @@ public class Injector {
                     boolean wasAccessible = method.isAccessible();
                     try {
                         method.setAccessible(true);
-                        return method.invoke(instance, new Object[]{});
+                        return method.invoke(instance);
                     } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                         throw new IllegalStateException("Problem invoking " + annotationClass + " : " + method, ex);
                     } finally {
@@ -214,12 +214,8 @@ public class Injector {
 
     public static void forgetAll() {
         Collection<Object> values = modelsAndServices.values();
-        values.stream().forEach((object) -> {
-            destroy(object);
-        });
-        presenters.stream().forEach((object) -> {
-            destroy(object);
-        });
+        values.stream().forEach(Injector::destroy);
+        presenters.stream().forEach(Injector::destroy);
         presenters.clear();
         modelsAndServices.clear();
         resetInstanceSupplier();
