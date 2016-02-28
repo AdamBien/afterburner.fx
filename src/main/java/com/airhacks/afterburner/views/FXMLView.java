@@ -20,6 +20,8 @@ package com.airhacks.afterburner.views;
  * #L%
  */
 import com.airhacks.afterburner.injection.Injector;
+
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.MissingResourceException;
@@ -75,12 +77,12 @@ public abstract class FXMLView extends StackPane {
      */
     public FXMLView(Function<String, Object> injectionContext) {
         this.injectionContext = injectionContext;
-        this.init(getFXMLName());
+        this.init();
     }
 
-    private void init(final String conventionalName) {
+    private void init() {
         this.presenterProperty = new SimpleObjectProperty<>();
-        this.resource = getClass().getResource(conventionalName);
+        this.resource = getClass().getClassLoader().getResource(getResourcePath(getFXMLName()));
         this.bundleName = getBundleName();
         this.bundle = getResourceBundle(bundleName);
     }
@@ -160,7 +162,7 @@ public abstract class FXMLView extends StackPane {
     }
 
     void addCSSIfAvailable(Parent parent) {
-        URL uri = getClass().getResource(getStyleSheetName());
+        URL uri = getClass().getClassLoader().getResource(getStyleSheetName());
         if (uri == null) {
             return;
         }
@@ -183,13 +185,13 @@ public abstract class FXMLView extends StackPane {
 
     String getResourceCamelOrLowerCase(boolean mandatory, String ending) {
         String name = getConventionalName(true, ending);
-        URL found = getClass().getResource(name);
+        URL found = getClass().getClassLoader().getResource(getResourcePath(name));
         if (found != null) {
             return name;
         }
         System.err.println("File: " + name + " not found, attempting with camel case");
         name = getConventionalName(false, ending);
-        found = getClass().getResource(name);
+        found = getClass().getClassLoader().getResource(getResourcePath(name));
         if (mandatory && found == null) {
             final String message = "Cannot load file " + name;
             System.err.println(message);
@@ -197,6 +199,10 @@ public abstract class FXMLView extends StackPane {
             throw new IllegalStateException(message);
         }
         return name;
+    }
+
+    private String getResourcePath(String name) {
+        return this.getClass().getPackage().getName().replaceAll("\\.", File.separator) + File.separator + name;
     }
 
     /**
@@ -221,7 +227,7 @@ public abstract class FXMLView extends StackPane {
      * @param presenterConsumer listener for the presenter construction
      */
     public void getPresenter(Consumer<Object> presenterConsumer) {
-        this.presenterProperty.addListener((ObservableValue<? extends Object> o, Object oldValue, Object newValue) -> {
+        this.presenterProperty.addListener((ObservableValue<?> o, Object oldValue, Object newValue) -> {
             presenterConsumer.accept(newValue);
         });
     }
