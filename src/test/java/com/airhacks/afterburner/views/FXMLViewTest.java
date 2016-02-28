@@ -57,14 +57,14 @@ public class FXMLViewTest {
 
     @Test
     public void fetchingNonExistingResource() {
-        URL shouldNotExist = FXMLView.class.getResource("non-existing");
+        URL shouldNotExist = FXMLView.class.getClassLoader().getResource("non-existing");
         assertNull(shouldNotExist);
     }
 
     @Test
     public void fetchingExistingResource() {
-        URL shouldNotExist = FXMLView.class.getResource("existing.xml");
-        assertNotNull(shouldNotExist);
+        URL shouldExist = FXMLView.class.getClassLoader().getResource("existing.xml");
+        assertNotNull(shouldExist);
     }
 
     @Test
