@@ -179,14 +179,12 @@ public class Injector {
 
     static void initialize(Object instance) {
         Class<?> clazz = instance.getClass();
-        invokeMethodWithAnnotation(clazz, instance, PostConstruct.class
-        );
+        invokeMethodWithAnnotation(clazz, instance, PostConstruct.class);
     }
 
     static void destroy(Object instance) {
         Class<?> clazz = instance.getClass();
-        invokeMethodWithAnnotation(clazz, instance, PreDestroy.class
-        );
+        invokeMethodWithAnnotation(clazz, instance, PreDestroy.class);
     }
 
     static void invokeMethodWithAnnotation(Class<?> clazz, final Object instance, final Class<? extends Annotation> annotationClass) throws IllegalStateException, SecurityException {
