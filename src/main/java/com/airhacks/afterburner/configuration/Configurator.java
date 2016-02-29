@@ -71,7 +71,7 @@ public class Configurator {
 
     Properties getProperties(Class<?> clazz) {
         Properties configuration = new Properties();
-        try (InputStream stream = clazz.getResourceAsStream(CONFIGURATION_FILE)) {
+        try (InputStream stream = clazz.getClassLoader().getResourceAsStream(CONFIGURATION_FILE)) {
             if (stream == null) {
                 return null;
             }
