@@ -19,34 +19,38 @@ package com.airhacks.afterburner.views;
  * limitations under the License.
  * #L%
  */
+
 import com.airhacks.afterburner.injection.Injector;
-import java.io.IOException;
-import java.net.URL;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-import static java.util.ResourceBundle.getBundle;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import static java.util.ResourceBundle.getBundle;
 
 /**
  * @author adam-bien.com
  */
-public abstract class FXMLView {
+public abstract class FXMLView<T extends Initializable> {
 
     public final static String DEFAULT_ENDING = "View";
-    protected ObjectProperty<Object> presenterProperty;
+    protected ObjectProperty<T> presenterProperty;
     protected FXMLLoader fxmlLoader;
     protected String bundleName;
     protected ResourceBundle bundle;
@@ -67,10 +71,9 @@ public abstract class FXMLView {
     }
 
     /**
-     *
      * @param injectionContext the function is used as a injection source.
-     * Values matching for the keys are going to be used for injection into the
-     * corresponding presenter.
+     *                         Values matching for the keys are going to be used for injection into the
+     *                         corresponding presenter.
      */
     public FXMLView(Function<String, Object> injectionContext) {
         this.injectionContext = injectionContext;
@@ -131,7 +134,6 @@ public abstract class FXMLView {
      * Creates the view asynchronously using an internal thread pool and passes
      * the parent node withing the UI Thread.
      *
-     *
      * @param consumer - an object interested in received the Parent as callback
      */
     public void getViewAsync(Consumer<Parent> consumer) {
@@ -167,7 +169,6 @@ public abstract class FXMLView {
     }
 
     /**
-     *
      * @return the name of the fxml file derived from the FXML view. e.g. The
      * name for the AirhacksView is going to be airhacks.fxml.
      */
@@ -202,7 +203,7 @@ public abstract class FXMLView {
      * @return the corresponding controller / presenter (usually for a
      * AirhacksView the AirhacksPresenter)
      */
-    public Object getPresenter() {
+    public T getPresenter() {
         this.initializeFXMLLoader();
         return this.presenterProperty.get();
     }
@@ -214,17 +215,16 @@ public abstract class FXMLView {
      *
      * @param presenterConsumer listener for the presenter construction
      */
-    public void getPresenter(Consumer<Object> presenterConsumer) {
-        this.presenterProperty.addListener((ObservableValue<? extends Object> o, Object oldValue, Object newValue) -> {
+    public void getPresenter(Consumer<T> presenterConsumer) {
+        this.presenterProperty.addListener((ObservableValue<? extends T> o, T oldValue, T newValue) -> {
             presenterConsumer.accept(newValue);
         });
     }
 
     /**
-     *
      * @param lowercase indicates whether the simple class name should be
-     * converted to lowercase of left unchanged
-     * @param ending the suffix to append
+     *                  converted to lowercase of left unchanged
+     * @param ending    the suffix to append
      * @return the conventional name with stripped ending
      */
     protected String getConventionalName(boolean lowercase, String ending) {
@@ -232,7 +232,6 @@ public abstract class FXMLView {
     }
 
     /**
-     *
      * @param lowercase indicates whether the simple class name should be
      * @return the name of the view without the "View" prefix.
      */
@@ -250,11 +249,16 @@ public abstract class FXMLView {
         return this.getClass().getPackage().getName() + "." + conventionalName;
     }
 
-    static String stripEnding(String clazz) {
-        if (!clazz.endsWith(DEFAULT_ENDING)) {
+    protected String stripEnding(String clazz) {
+        return stripEnding(clazz, DEFAULT_ENDING);
+    }
+
+
+    protected String stripEnding(String clazz, String ending) {
+        if (!clazz.endsWith(ending)) {
             return clazz;
         }
-        int viewIndex = clazz.lastIndexOf(DEFAULT_ENDING);
+        int viewIndex = clazz.lastIndexOf(ending);
         return clazz.substring(0, viewIndex);
     }
 
@@ -267,7 +271,6 @@ public abstract class FXMLView {
     }
 
     /**
-     *
      * @return an existing resource bundle, or null
      */
     public ResourceBundle getResourceBundle() {
