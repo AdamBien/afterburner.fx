@@ -96,7 +96,7 @@ public abstract class FXMLView extends StackPane {
         return loader;
     }
 
-    void initializeFXMLLoader() {
+    protected void initializeFXMLLoader() {
         if (this.fxmlLoader == null) {
             this.fxmlLoader = this.loadSynchronously(resource, bundle, bundleName);
             this.presenterProperty.set(this.fxmlLoader.getController());
