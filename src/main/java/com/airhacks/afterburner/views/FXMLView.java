@@ -9,9 +9,9 @@ package com.airhacks.afterburner.views;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,8 +20,10 @@ package com.airhacks.afterburner.views;
  * #L%
  */
 import com.airhacks.afterburner.injection.Injector;
+import com.airhacks.afterburner.injection.PresenterFactory;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import static java.util.ResourceBundle.getBundle;
@@ -33,6 +35,8 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -42,6 +46,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.layout.StackPane;
+import javafx.util.Callback;
 
 /**
  * @author adam-bien.com
@@ -87,13 +92,32 @@ public abstract class FXMLView extends StackPane {
 
     FXMLLoader loadSynchronously(final URL resource, ResourceBundle bundle, final String conventionalName) throws IllegalStateException {
         final FXMLLoader loader = new FXMLLoader(resource, bundle);
-        loader.setControllerFactory((Class<?> p) -> Injector.instantiatePresenter(p, this.injectionContext));
+        PresenterFactory factory = discover();
+        Callback<Class<?>, Object> controllerFactory = (Class<?> p) -> factory.instantiatePresenter(p, this.injectionContext);
+        loader.setControllerFactory(controllerFactory);
         try {
             loader.load();
         } catch (IOException ex) {
             throw new IllegalStateException("Cannot load " + conventionalName, ex);
         }
         return loader;
+    }
+
+    PresenterFactory discover() {
+        Iterable<PresenterFactory> discoveredFactories = PresenterFactory.discover();
+        List<PresenterFactory> factories = StreamSupport.stream(discoveredFactories.spliterator(), false).
+                collect(Collectors.toList());
+        if (factories.isEmpty()) {
+            return Injector::instantiatePresenter;
+        }
+
+        if (factories.size() == 1) {
+            return factories.get(0);
+        } else {
+            factories.forEach(System.err::println);
+            throw new IllegalStateException("More than one PresenterFactories discovered");
+        }
+
     }
 
     void initializeFXMLLoader() {
@@ -107,7 +131,7 @@ public abstract class FXMLView extends StackPane {
      * Initializes the view by loading the FXML (if not happened yet) and
      * returns the top Node (parent) specified in
      *
-     * @return
+     * @return the node loaded by FXMLLoader
      */
     public Parent getView() {
         this.initializeFXMLLoader();

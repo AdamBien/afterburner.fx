@@ -9,9 +9,9 @@ package com.airhacks.afterburner.injection;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,7 +20,6 @@ package com.airhacks.afterburner.injection;
  * #L%
  */
 import com.airhacks.afterburner.configuration.Configurator;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -34,7 +33,6 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -54,10 +52,9 @@ public class Injector {
 
     private static final Configurator configurator = new Configurator();
 
-    
-	public static <T> T instantiatePresenter(Class<T> clazz, Function<String, Object> injectionContext) {
-		@SuppressWarnings("unchecked")
-		T presenter = registerExistingAndInject( (T)instanceSupplier.apply(clazz));
+    public static <T> T instantiatePresenter(Class<T> clazz, Function<String, Object> injectionContext) {
+        @SuppressWarnings("unchecked")
+        T presenter = registerExistingAndInject((T) instanceSupplier.apply(clazz));
         //after the regular, conventional initialization and injection, perform postinjection
         Field[] fields = clazz.getDeclaredFields();
         for (final Field field : fields) {
@@ -99,6 +96,7 @@ public class Injector {
     /**
      * Caches the passed presenter internally and injects all fields
      *
+     * @param <T> the class to initialize
      * @param instance An already existing (legacy) presenter interesting in
      * injection
      * @return presenter with injected fields
@@ -109,12 +107,11 @@ public class Injector {
         return product;
     }
 
-    
-	@SuppressWarnings("unchecked")
-	public static <T> T instantiateModelOrService(Class<T> clazz) {
-		T product = (T) modelsAndServices.get(clazz);
+    @SuppressWarnings("unchecked")
+    public static <T> T instantiateModelOrService(Class<T> clazz) {
+        T product = (T) modelsAndServices.get(clazz);
         if (product == null) {
-            product = injectAndInitialize((T)instanceSupplier.apply(clazz));
+            product = injectAndInitialize((T) instanceSupplier.apply(clazz));
             modelsAndServices.putIfAbsent(clazz, product);
         }
         return clazz.cast(product);
@@ -162,7 +159,7 @@ public class Injector {
         }
     }
 
-	static void injectIntoField(final Field field, final Object instance, final Object target) {
+    static void injectIntoField(final Field field, final Object instance, final Object target) {
         AccessController.doPrivileged((PrivilegedAction<?>) () -> {
             boolean wasAccessible = field.isAccessible();
             try {
