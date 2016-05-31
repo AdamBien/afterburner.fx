@@ -21,6 +21,10 @@ package com.airhacks.afterburner.injection;
  */
 import com.airhacks.afterburner.configuration.Configurator;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -31,11 +35,7 @@ import java.security.PrivilegedAction;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import java.util.function.Supplier;
 
 /**
  *
@@ -242,10 +242,16 @@ public class Injector {
      * Simple DI implementation with support for
      *    - @Singleton annotation
      *    - private default constructors
+     *    - bind providers
      */
     private static class DefaultInstanceProvider implements Function<Class<?>, Object> {
 
         private Map<Class<?>,Object> instanceCache = new HashMap<>();
+        private Map<Class<?>, Supplier<?>> providerCache = new HashMap<>();
+
+        public <K, T extends K> void  bindProvider( Class<K> cls, Supplier<T> provider ) {
+            providerCache.put(cls, provider);
+        }
 
         @Override
         public Object apply(Class<?> cls) {
@@ -254,16 +260,23 @@ public class Injector {
             try {
 
                 if ( singleton ) {
-                    // 1.8 API is not used intentionally so everything works in mobile environments
-                    Object instance = instanceCache.get(cls);
+                    Object instance = instanceCache.get(cls); //TODO use 1.8 API when it becomes available
                     if ( instance != null ) return instance;
                 }
 
-                // instantiate using default constructor even if it is private
-                Constructor<?> defaultConstructor =  cls.getDeclaredConstructor();
-                defaultConstructor.setAccessible(true);
-                Object instance = defaultConstructor.newInstance();
+                // try to create an instance using provider
+                Object instance = Optional.ofNullable(providerCache.get(cls))
+                        .map(Supplier::get)
+                        .orElse(null);
 
+                // try to create it using default constructor
+                if ( instance == null  ) {
+                    Constructor<?> defaultConstructor =  cls.getDeclaredConstructor();
+                    defaultConstructor.setAccessible(true);
+                    instance = defaultConstructor.newInstance();
+                }
+
+                // cache the instance if it was marked as singleton
                 if ( singleton )  {
                     instanceCache.put(cls, instance);
                 }
@@ -274,7 +287,6 @@ public class Injector {
             }
 
         }
-
 
     }
 
