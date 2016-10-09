@@ -20,6 +20,7 @@ package com.airhacks.afterburner.injection;
  * #L%
  */
 import com.airhacks.afterburner.configuration.Configurator;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -33,9 +34,11 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -139,7 +142,7 @@ public class Injector {
             if (field.isAnnotationPresent(Inject.class)) {
                 LOG.accept("Field annotated with @Inject found: " + field);
                 Class<?> type = field.getType();
-                String key = field.getName();
+                String key = (field.isAnnotationPresent(Named.class))?field.getAnnotation(Named.class).value():field.getName();
                 Object value = configurator.getProperty(clazz, key);
                 LOG.accept("Value returned by configurator is: " + value);
                 if (value == null && isNotPrimitiveOrString(type)) {

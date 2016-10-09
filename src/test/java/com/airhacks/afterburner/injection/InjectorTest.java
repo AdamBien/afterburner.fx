@@ -191,6 +191,14 @@ public class InjectorTest {
         Injector.injectAndInitialize(new DateProperties());
         verify(logger, atLeastOnce()).accept(anyString());
     }
+    
+    @Test
+    public void namedSystemProperties() {
+    	NamedInjection named = (NamedInjection) Injector.injectAndInitialize(new NamedInjection());
+    	
+    	assertThat(named.getUserHome(), is(System.getProperty("user.home")));
+    	assertThat(named.getJavaVersion(), is(System.getProperty("java.version")));
+    }
 
     @After
     public void reset() {
