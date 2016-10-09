@@ -20,6 +20,7 @@ package com.airhacks.afterburner.injection;
  * #L%
  */
 import com.airhacks.afterburner.configuration.Configurator;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -28,11 +29,14 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -225,11 +229,21 @@ public class Injector {
 
     static Function<Class<?>, Object> getDefaultInstanceSupplier() {
         return (c) -> {
-            try {
-                return c.newInstance();
-            } catch (InstantiationException | IllegalAccessException ex) {
-                throw new IllegalStateException("Cannot instantiate view: " + c, ex);
-            }
+        	if (c.isInterface()) {
+        		// For an interface default behavior is to delegate to standard JRE loading mechanism ServiceLoader
+        		Iterator itProviders = ServiceLoader.load(c).iterator();
+        		if (itProviders.hasNext()) {
+        			return itProviders.next();
+        		}
+				throw new IllegalStateException("Cannot, via ServiceLoader, instanciate an object from interface: " + c);
+        	} else {
+        		try {
+            		// It's a class, let's try to instanciate it directly
+        			return c.newInstance();
+        		} catch (InstantiationException | IllegalAccessException ex) {
+        			throw new IllegalStateException("Cannot instantiate: " + c, ex);
+        		}
+        	}
         };
     }
 
