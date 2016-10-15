@@ -4,14 +4,14 @@ import com.airhacks.afterburner.topgun.TopgunView;
 import com.airhacks.afterburner.views.binary.BinaryView;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests to check that css files are loaded as required
+ * Tests to check that css files are loaded as required.
+ * @author Ben Oxley
  */
 public class CSSLoadTest {
-    
+
     @Test
     public void cssIsLoadedTest(){
         TopgunView view = new TopgunView();
