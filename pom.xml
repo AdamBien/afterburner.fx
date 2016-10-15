@@ -164,6 +164,7 @@
                 <directory>src/test/java</directory>
                 <includes>
                     <include>**/*.fxml</include>
+                    <include>**/*.bss</include>
                     <include>**/*.css</include>
                     <include>**/*.properties</include>
                 </includes>
