@@ -21,23 +21,21 @@ package com.airhacks.afterburner.injection;
  */
 import com.airhacks.afterburner.configuration.Configurator;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
+import java.util.function.Supplier;
 
 /**
  *
@@ -228,13 +226,7 @@ public class Injector {
     }
 
     static Function<Class<?>, Object> getDefaultInstanceSupplier() {
-        return (c) -> {
-            try {
-                return c.newInstance();
-            } catch (InstantiationException | IllegalAccessException ex) {
-                throw new IllegalStateException("Cannot instantiate view: " + c, ex);
-            }
-        };
+       return new DefaultInstanceProvider();
     }
 
     public static Consumer<String> getDefaultLogger() {
@@ -245,4 +237,59 @@ public class Injector {
     private static boolean isNotPrimitiveOrString(Class<?> type) {
         return !type.isPrimitive() && !type.isAssignableFrom(String.class);
     }
+
+    /**
+     * Simple DI implementation with support for
+     *    - @Singleton annotation
+     *    - private default constructors
+     *    - bind providers
+     */
+    private static class DefaultInstanceProvider implements Function<Class<?>, Object> {
+
+        private Map<Class<?>,Object> instanceCache = new HashMap<>();
+        private Map<Class<?>, Supplier<?>> providerCache = new HashMap<>();
+
+        public <K, T extends K> void  bindProvider( Class<K> cls, Supplier<T> provider ) {
+            providerCache.put(cls, provider);
+        }
+
+        @Override
+        public Object apply(Class<?> cls) {
+
+            boolean singleton = cls.isAnnotationPresent(Singleton.class);
+            try {
+
+                if ( singleton ) {
+                    Object instance = instanceCache.get(cls); //TODO use 1.8 API when it becomes available
+                    if ( instance != null ) return instance;
+                }
+
+                // try to create an instance using provider
+                Object instance = Optional.ofNullable(providerCache.get(cls))
+                        .map(Supplier::get)
+                        .orElse(null);
+
+                // try to create it using default constructor
+                if ( instance == null  ) {
+                    Constructor<?> defaultConstructor =  cls.getDeclaredConstructor();
+                    defaultConstructor.setAccessible(true);
+                    instance = defaultConstructor.newInstance();
+                }
+
+                // cache the instance if it was marked as singleton
+                if ( singleton )  {
+                    instanceCache.put(cls, instance);
+                }
+                return instance;
+
+            } catch (Throwable ex) {
+                throw new IllegalStateException("Cannot instantiate a view: " + cls, ex);
+            }
+
+        }
+
+    }
+
+
+
 }
