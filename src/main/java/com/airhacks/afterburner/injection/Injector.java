@@ -9,9 +9,9 @@ package com.airhacks.afterburner.injection;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,7 +19,7 @@ package com.airhacks.afterburner.injection;
  * limitations under the License.
  * #L%
  */
-import com.airhacks.afterburner.configuration.Configurator;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -33,12 +33,15 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
+import com.airhacks.afterburner.configuration.Configurator;
+
 /**
- *
+ * 
  * @author adam-bien.com
  */
 public class Injector {
@@ -54,18 +57,7 @@ public class Injector {
 
     public static <T> T instantiatePresenter(Class<T> clazz, Function<String, Object> injectionContext) {
         @SuppressWarnings("unchecked")
-        T presenter = registerExistingAndInject((T) instanceSupplier.apply(clazz));
-        //after the regular, conventional initialization and injection, perform postinjection
-        Field[] fields = clazz.getDeclaredFields();
-        for (final Field field : fields) {
-            if (field.isAnnotationPresent(Inject.class)) {
-                final String fieldName = field.getName();
-                final Object value = injectionContext.apply(fieldName);
-                if (value != null) {
-                    injectIntoField(field, presenter, value);
-                }
-            }
-        }
+        T presenter = registerExistingAndInject((T) instanceSupplier.apply(clazz), injectionContext);
         return presenter;
     }
 
@@ -99,19 +91,20 @@ public class Injector {
      * @param <T> the class to initialize
      * @param instance An already existing (legacy) presenter interesting in
      * injection
+     * @param injectionContext
      * @return presenter with injected fields
      */
-    public static <T> T registerExistingAndInject(T instance) {
-        T product = injectAndInitialize(instance);
+    public static <T> T registerExistingAndInject(T instance, Function<String, Object> injectionContext) {
+        T product = injectAndInitialize(instance, injectionContext);
         presenters.add(product);
         return product;
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T instantiateModelOrService(Class<T> clazz) {
+    public static <T> T instantiateModelOrService(Class<T> clazz, Function<String, Object> injectionContext) {
         T product = (T) modelsAndServices.get(clazz);
         if (product == null) {
-            product = injectAndInitialize((T) instanceSupplier.apply(clazz));
+            product = injectAndInitialize((T) instanceSupplier.apply(clazz), injectionContext);
             modelsAndServices.putIfAbsent(clazz, product);
         }
         return clazz.cast(product);
@@ -121,31 +114,40 @@ public class Injector {
         modelsAndServices.put(clazz, instance);
     }
 
-    static <T> T injectAndInitialize(T product) {
-        injectMembers(product);
+    static <T> T injectAndInitialize(T product, Function<String, Object> injectionContext) {
+        injectMembers(product, injectionContext);
         initialize(product);
         return product;
     }
 
-    static void injectMembers(final Object instance) {
+    static void injectMembers(final Object instance, Function<String, Object> injectionContext) {
         Class<? extends Object> clazz = instance.getClass();
-        injectMembers(clazz, instance);
+        injectMembers(clazz, instance, injectionContext);
     }
 
-    public static void injectMembers(Class<? extends Object> clazz, final Object instance) throws SecurityException {
+    public static void injectMembers(Class<? extends Object> clazz, final Object instance, Function<String, Object> injectionContext) throws SecurityException {
         LOG.accept("Injecting members for class " + clazz + " and instance " + instance);
         Field[] fields = clazz.getDeclaredFields();
         for (final Field field : fields) {
             if (field.isAnnotationPresent(Inject.class)) {
                 LOG.accept("Field annotated with @Inject found: " + field);
                 Class<?> type = field.getType();
-                String key = field.getName();
-                Object value = configurator.getProperty(clazz, key);
+                String fieldName = field.getName();
+
+                // First try the configurator
+                Object value = configurator.getProperty(clazz, fieldName);
                 LOG.accept("Value returned by configurator is: " + value);
+
+                // Next try injection context
+                if (value == null) {
+                    value = injectionContext.apply(fieldName);
+                }
+
                 if (value == null && isNotPrimitiveOrString(type)) {
                     LOG.accept("Field is not a JDK class");
-                    value = instantiateModelOrService(type);
+                    value = instantiateModelOrService(type, injectionContext);
                 }
+
                 if (value != null) {
                     LOG.accept("Value is a primitive, injecting...");
                     injectIntoField(field, instance, value);
@@ -155,7 +157,7 @@ public class Injector {
         Class<? extends Object> superclass = clazz.getSuperclass();
         if (superclass != null) {
             LOG.accept("Injecting members of: " + superclass);
-            injectMembers(superclass, instance);
+            injectMembers(superclass, instance, injectionContext);
         }
     }
 
@@ -194,7 +196,7 @@ public class Injector {
                     boolean wasAccessible = method.isAccessible();
                     try {
                         method.setAccessible(true);
-                        return method.invoke(instance, new Object[]{});
+                        return method.invoke(instance);
                     } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                         throw new IllegalStateException("Problem invoking " + annotationClass + " : " + method, ex);
                     } finally {
@@ -211,12 +213,8 @@ public class Injector {
 
     public static void forgetAll() {
         Collection<Object> values = modelsAndServices.values();
-        values.stream().forEach((object) -> {
-            destroy(object);
-        });
-        presenters.stream().forEach((object) -> {
-            destroy(object);
-        });
+        values.forEach(Injector::destroy);
+        presenters.forEach(Injector::destroy);
         presenters.clear();
         modelsAndServices.clear();
         resetInstanceSupplier();
