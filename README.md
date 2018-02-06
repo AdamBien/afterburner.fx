@@ -1,34 +1,12 @@
 afterburner.fx
 ==============
 
-The opinionated just-enough MVP framework (2.5 classes) for JavaFX
+This is fork of [Adam Bien's afterburner.fx](https://github.com/AdamBien/afterburner.fx) with following PRs integrated.
 
-Afterburner is a "Just-Enough-Framework" extracted from [airhacks-control](https://github.com/AdamBien/airhacks-control) and used in [airpad](https://github.com/AdamBien/airpad), [lightfish](https://github.com/AdamBien/lightfish) and [floyd](https://github.com/AdamBien/floyd) applications. 
+- https://github.com/AdamBien/afterburner.fx/pull/63
+- https://github.com/AdamBien/afterburner.fx/pull/68
+- https://github.com/AdamBien/afterburner.fx/pull/80
+- (documentation only) https://github.com/AdamBien/afterburner.fx/pull/72, https://github.com/AdamBien/afterburner.fx/pull/73, https://github.com/AdamBien/afterburner.fx/pull/74
 
-Goal: "Less Code, Increased Productivity"
+Until these PRs are integrated, this fork is maintained.
 
-Jumpstart with:
-
-```shell
-mvn archetype:generate -Dfilter=com.airhacks:igniter
-```
-
-
-
-Afterburner is also available from maven central:
-```xml
-        <dependency>
-            <groupId>com.airhacks</groupId>
-            <artifactId>afterburner.fx</artifactId>
-            <version>[LATEST_RELEASE]</version>
-        </dependency>
-```
-The current development version is available as snapshot:
-
-[![igniter / afterburner walk-through](https://i1.ytimg.com/vi/xqkbu1IrHSw/mqdefault.jpg)](https://www.youtube.com/watch?v=xqkbu1IrHSw)
-
-See also: [http://afterburner.adam-bien.com](http://afterburner.adam-bien.com)
-
-Simplistic example:  [https://github.com/AdamBien/followme.fx](https://github.com/AdamBien/followme.fx)
-
-Deploying afterburner.fx applications: [https://github.com/AdamBien/airfield/](https://github.com/AdamBien/airfield/)

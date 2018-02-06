@@ -5,9 +5,9 @@
         <artifactId>oss-parent</artifactId>
         <version>9</version>
     </parent>
-    <groupId>com.airhacks</groupId>
+    <groupId>org.jabref</groupId>
     <artifactId>afterburner.fx</artifactId>
-    <version>1.7.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>afterburner.fx</name>
@@ -26,13 +26,6 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-    <developers>
-        <developer>
-            <name>Adam Bien</name>
-            <organization>adam-bien.com</organization>
-            <organizationUrl>http://adam-bien.com</organizationUrl>
-        </developer>
-    </developers>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
