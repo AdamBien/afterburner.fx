@@ -41,7 +41,7 @@ import javax.inject.Inject;
 import com.airhacks.afterburner.configuration.Configurator;
 
 /**
- * 
+ *
  * @author adam-bien.com
  */
 public class Injector {
@@ -85,6 +85,10 @@ public class Injector {
         configurator.forgetAll();
     }
 
+    public static <T> T registerExistingAndInject(T instance) {
+        return registerExistingAndInject(instance, x -> null);
+    }
+
     /**
      * Caches the passed presenter internally and injects all fields
      *
@@ -100,6 +104,10 @@ public class Injector {
         return product;
     }
 
+    public static <T> T instantiateModelOrService(Class<T> clazz) {
+        return instantiateModelOrService(clazz, x -> null);
+    }
+
     @SuppressWarnings("unchecked")
     public static <T> T instantiateModelOrService(Class<T> clazz, Function<String, Object> injectionContext) {
         T product = (T) modelsAndServices.get(clazz);
@@ -112,6 +120,10 @@ public class Injector {
 
     public static <T> void setModelOrService(Class<T> clazz, T instance) {
         modelsAndServices.put(clazz, instance);
+    }
+
+    static <T> T injectAndInitialize(T product) {
+        return injectAndInitialize(product, x -> null);
     }
 
     static <T> T injectAndInitialize(T product, Function<String, Object> injectionContext) {
