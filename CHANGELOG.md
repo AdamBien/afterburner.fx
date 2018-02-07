@@ -14,4 +14,4 @@ Initial release.
 - Integrated https://github.com/AdamBien/afterburner.fx/pull/68
 - Integrated https://github.com/AdamBien/afterburner.fx/pull/80
 - Integrated https://github.com/AdamBien/afterburner.fx/pull/72, https://github.com/AdamBien/afterburner.fx/pull/73, https://github.com/AdamBien/afterburner.fx/pull/74
-
+- `build.gradle` to enable building with gradle

@@ -9,4 +9,3 @@ This is fork of [Adam Bien's afterburner.fx](https://github.com/AdamBien/afterbu
 - (documentation only) https://github.com/AdamBien/afterburner.fx/pull/72, https://github.com/AdamBien/afterburner.fx/pull/73, https://github.com/AdamBien/afterburner.fx/pull/74
 
 Until these PRs are integrated, this fork is maintained.
-

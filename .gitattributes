@@ -1,0 +1,7 @@
+# unix  line endings at unix files
+gradlew text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+
+# ensure that line endings of *.java are normalized
+*.java text
