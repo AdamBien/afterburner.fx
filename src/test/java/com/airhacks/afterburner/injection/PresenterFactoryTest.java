@@ -51,7 +51,7 @@ public class PresenterFactoryTest {
 
     @Test
     public void discoverPresenter() {
-        Iterable<PresenterFactory> presenters = PresenterFactory.discover();
+        Iterable<PresenterFactory> presenters = PresenterFactory.discover(Thread.currentThread().getContextClassLoader());
         List<PresenterFactory> all = StreamSupport.stream(presenters.spliterator(), false).collect(Collectors.toList());
         assertThat(all.size(), is(1));
         PresenterFactory discovered = all.get(0);

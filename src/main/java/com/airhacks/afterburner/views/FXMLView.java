@@ -104,7 +104,7 @@ public abstract class FXMLView extends StackPane {
     }
 
     PresenterFactory discover() {
-        Iterable<PresenterFactory> discoveredFactories = PresenterFactory.discover();
+        Iterable<PresenterFactory> discoveredFactories = PresenterFactory.discover(getClassLoader());
         List<PresenterFactory> factories = StreamSupport.stream(discoveredFactories.spliterator(), false).
                 collect(Collectors.toList());
         if (factories.isEmpty()) {
@@ -324,4 +324,7 @@ public abstract class FXMLView extends StackPane {
         return null;
     }
 
+    public ClassLoader getClassLoader() {
+        return Thread.currentThread().getContextClassLoader();
+    }
 }

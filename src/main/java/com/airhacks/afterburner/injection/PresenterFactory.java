@@ -72,8 +72,8 @@ public interface PresenterFactory {
      * @return all discovered implementations of PresenterFactory using the
      * {@link java.util.ServiceLoader} mechanism
      */
-    static Iterable<PresenterFactory> discover() {
-        return ServiceLoader.load(PresenterFactory.class);
+    static Iterable<PresenterFactory> discover(ClassLoader classLoader) {
+        return ServiceLoader.load(PresenterFactory.class, classLoader);
     }
 
 }
