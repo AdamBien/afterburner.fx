@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+<fx:root xmlns:fx="http://javafx.com/fxml"
+         type="javafx.scene.layout.VBox"
+         xmlns="http://javafx.com/javafx"
+         fx:controller="com.airhacks.afterburner.demo.control.CustomTextField"
+         prefHeight="400.0" prefWidth="600.0">
+    <TextField fx:id="textField"/>
+    <Button text="Click Me" onAction="#doSomething"/>
+</fx:root>

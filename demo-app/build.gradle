@@ -1,0 +1,20 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = 'com.airhacks.afterburner.demo.DemoApplication'
+
+dependencies {
+    compile rootProject
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ["src/main/java"]
+        }
+
+        resources {
+            srcDirs = ["src/main/java", "src/main/resources"]
+        }
+    }
+}

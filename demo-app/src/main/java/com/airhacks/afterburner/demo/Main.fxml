@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.VBox?>
+<?import com.airhacks.afterburner.demo.control.CustomTextField?>
+<VBox xmlns:fx="http://javafx.com/fxml"
+      xmlns="http://javafx.com/javafx"
+      fx:controller="com.airhacks.afterburner.demo.MainController"
+      prefHeight="400.0" prefWidth="600.0">
+    <CustomTextField text="Hello World!"/>
+</VBox>
