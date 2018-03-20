@@ -24,9 +24,9 @@ package com.airhacks.afterburner.injection;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,8 +34,15 @@ package com.airhacks.afterburner.injection;
  * limitations under the License.
  * #L%
  */
+
+import java.util.List;
 import java.util.ServiceLoader;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The implementation of this interface is fully optional and only needed in
@@ -69,11 +76,23 @@ public interface PresenterFactory {
 
     /**
      *
-     * @return all discovered implementations of PresenterFactory using the
+     * @return the discovered implementations of PresenterFactory using the
      * {@link java.util.ServiceLoader} mechanism
      */
-    static Iterable<PresenterFactory> discover() {
-        return ServiceLoader.load(PresenterFactory.class);
-    }
+    static PresenterFactory discover() {
+        Iterable<PresenterFactory> discoveredFactories = ServiceLoader.load(PresenterFactory.class);
+        List<PresenterFactory> factories = StreamSupport.stream(discoveredFactories.spliterator(), false)
+                                                        .collect(Collectors.toList());
+        if (factories.isEmpty()) {
+            return Injector::instantiatePresenter;
+        }
 
+        if (factories.size() == 1) {
+            return factories.get(0);
+        } else {
+            Logger logger = LoggerFactory.getLogger(PresenterFactory.class);
+            factories.forEach(factory -> logger.error(factory.toString()));
+            throw new IllegalStateException("More than one PresenterFactories discovered");
+        }
+    }
 }

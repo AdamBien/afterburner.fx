@@ -22,8 +22,6 @@ package com.airhacks.afterburner.views;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
-import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -34,18 +32,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.util.Callback;
 
-import com.airhacks.afterburner.injection.Injector;
 import com.airhacks.afterburner.injection.PresenterFactory;
-
-import static java.util.ResourceBundle.getBundle;
 
 /**
  * @author adam-bien.com
@@ -60,7 +53,6 @@ public class ViewLoader {
 
     protected FXMLLoader fxmlLoader;
     protected String bundleName;
-    protected ResourceBundle bundle;
     protected URL resource;
     protected static Executor FX_PLATFORM_EXECUTOR = Platform::runLater;
 
@@ -71,8 +63,7 @@ public class ViewLoader {
         this.clazz = clazz;
         this.resource = this.clazz.getResource(getFXMLName());
         this.bundleName = getBundleName();
-        this.bundle = getResourceBundle(bundleName);
-        this.fxmlLoader = new FXMLLoader(resource, bundle);
+        this.fxmlLoader = new FXMLLoader(resource);
         updateControllerFactory(f -> null);
     }
 
@@ -100,14 +91,6 @@ public class ViewLoader {
         }
         int viewIndex = clazz.lastIndexOf(DEFAULT_ENDING);
         return clazz.substring(0, viewIndex);
-    }
-
-    private static ResourceBundle getResourceBundle(String name) {
-        try {
-            return getBundle(name);
-        } catch (MissingResourceException ex) {
-            return null;
-        }
     }
 
     private static ExecutorService getExecutorService() {
@@ -167,25 +150,9 @@ public class ViewLoader {
     }
 
     private void updateControllerFactory(Function<String, Object> injectionContext) {
-        PresenterFactory factory = discover();
+        PresenterFactory factory = PresenterFactory.discover();
         Callback<Class<?>, Object> controllerFactory = (Class<?> p) -> factory.instantiatePresenter(p, injectionContext);
         fxmlLoader.setControllerFactory(controllerFactory);
-    }
-
-    private PresenterFactory discover() {
-        Iterable<PresenterFactory> discoveredFactories = PresenterFactory.discover();
-        List<PresenterFactory> factories = StreamSupport.stream(discoveredFactories.spliterator(), false).
-                collect(Collectors.toList());
-        if (factories.isEmpty()) {
-            return Injector::instantiatePresenter;
-        }
-
-        if (factories.size() == 1) {
-            return factories.get(0);
-        } else {
-            factories.forEach(s->LOGGER.severe(s.toString()));
-            throw new IllegalStateException("More than one PresenterFactories discovered");
-        }
     }
 
     /**
@@ -195,6 +162,10 @@ public class ViewLoader {
      * @throws IllegalStateException if an exception occurred during loading and parsing of the FXML file
      */
     public ViewLoaderResult load() throws IllegalStateException {
+        ResourceLocator resourceLocator = ResourceLocator.discover();
+        ResourceBundle bundle = resourceLocator.getResourceBundle(bundleName);
+        fxmlLoader.setResources(bundle);
+
         try {
             fxmlLoader.load();
         } catch (IOException ex) {
