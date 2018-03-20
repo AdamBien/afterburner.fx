@@ -1,7 +1,6 @@
 package com.airhacks.afterburner.demo.dialog;
 
 import javafx.fxml.FXML;
-import javafx.scene.Parent;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
@@ -17,10 +16,9 @@ public class SimpleDialog extends Dialog<String> {
     public SimpleDialog(String message) {
         this.setTitle("Hello message from a simple dialog");
 
-        Parent content = ViewLoader.view(this)
-                                   .load()
-                                   .getView();
-        this.getDialogPane().setContent(content);
+        ViewLoader.view(this)
+                  .load()
+                  .setAsContent(this.getDialogPane());
 
         this.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         this.setResultConverter(button -> {

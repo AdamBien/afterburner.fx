@@ -5,6 +5,7 @@ import java.util.ResourceBundle;
 
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.control.DialogPane;
 
 public class ViewLoaderResult {
     private final Parent view;
@@ -41,5 +42,9 @@ public class ViewLoaderResult {
 
     public Object getController() {
         return controller;
+    }
+
+    public void setAsContent(DialogPane dialogPane) {
+        dialogPane.setContent(view);
     }
 }
