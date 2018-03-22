@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
@@ -39,6 +38,8 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 import com.airhacks.afterburner.configuration.Configurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -51,7 +52,7 @@ public class Injector {
 
     private static Function<Class<?>, Object> instanceSupplier = getDefaultInstanceSupplier();
 
-    private static Consumer<String> LOG = getDefaultLogger();
+    private static Logger LOGGER = LoggerFactory.getLogger(Injector.class);
 
     private static final Configurator configurator = new Configurator();
 
@@ -67,10 +68,6 @@ public class Injector {
 
     public static void setInstanceSupplier(Function<Class<?>, Object> instanceSupplier) {
         Injector.instanceSupplier = instanceSupplier;
-    }
-
-    public static void setLogger(Consumer<String> logger) {
-        LOG = logger;
     }
 
     public static void setConfigurationSource(Function<Object, Object> configurationSupplier) {
@@ -138,17 +135,17 @@ public class Injector {
     }
 
     public static void injectMembers(Class<? extends Object> clazz, final Object instance, Function<String, Object> injectionContext) throws SecurityException {
-        LOG.accept("Injecting members for class " + clazz + " and instance " + instance);
+        LOGGER.debug("Injecting members for class " + clazz + " and instance " + instance);
         Field[] fields = clazz.getDeclaredFields();
         for (final Field field : fields) {
             if (field.isAnnotationPresent(Inject.class)) {
-                LOG.accept("Field annotated with @Inject found: " + field);
+                LOGGER.trace("Field annotated with @Inject found: " + field);
                 Class<?> type = field.getType();
                 String fieldName = field.getName();
 
                 // First try the configurator
                 Object value = configurator.getProperty(clazz, fieldName);
-                LOG.accept("Value returned by configurator is: " + value);
+                LOGGER.trace("Value returned by configurator is: " + value);
 
                 // Next try injection context
                 if (value == null) {
@@ -156,19 +153,19 @@ public class Injector {
                 }
 
                 if (value == null && isNotPrimitiveOrString(type)) {
-                    LOG.accept("Field is not a JDK class");
+                    LOGGER.trace("Field is not a JDK class");
                     value = instantiateModelOrService(type, injectionContext);
                 }
 
                 if (value != null) {
-                    LOG.accept("Value is a primitive, injecting...");
+                    LOGGER.trace("Value is a primitive, injecting...");
                     injectIntoField(field, instance, value);
                 }
             }
         }
         Class<? extends Object> superclass = clazz.getSuperclass();
         if (superclass != null) {
-            LOG.accept("Injecting members of: " + superclass);
+            LOGGER.trace("Injecting members of: " + superclass);
             injectMembers(superclass, instance, injectionContext);
         }
     }
@@ -240,11 +237,6 @@ public class Injector {
             } catch (InstantiationException | IllegalAccessException ex) {
                 throw new IllegalStateException("Cannot instantiate view: " + c, ex);
             }
-        };
-    }
-
-    public static Consumer<String> getDefaultLogger() {
-        return l -> {
         };
     }
 

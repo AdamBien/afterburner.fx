@@ -30,8 +30,6 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -39,13 +37,15 @@ import javafx.scene.Parent;
 import javafx.util.Callback;
 
 import com.airhacks.afterburner.injection.PresenterFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author adam-bien.com
  */
 public class ViewLoader {
 
-    private static final Logger LOGGER = Logger.getLogger(ViewLoader.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ViewLoader.class);
 
     private static final String DEFAULT_ENDING = "View";
     private static final String CSS_FILE_ENDING = ".css";
@@ -256,13 +256,13 @@ public class ViewLoader {
         if (found != null) {
             return name;
         }
-        LOGGER.config("File: " + name + " not found, attempting with camel case");
+        LOGGER.debug("File: " + name + " not found, attempting with camel case");
         name = getConventionalName(false, ending);
         found = clazz.getResource(name);
         if (mandatory && found == null) {
             final String message = "Cannot load file " + name;
-            LOGGER.severe(message);
-            LOGGER.severe("Stopping initialization phase...");
+            LOGGER.error(message);
+            LOGGER.error("Stopping initialization phase...");
             throw new IllegalStateException(message);
         }
         return name;
@@ -293,7 +293,7 @@ public class ViewLoader {
      * @return nothing
      */
     public Void exceptionReporter(Throwable t) {
-        LOGGER.log(Level.SEVERE,"Exception thrown in afterburner.fx",t);
+        LOGGER.error("Exception thrown in afterburner.fx", t);
         return null;
     }
 }
