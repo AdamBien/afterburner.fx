@@ -110,12 +110,14 @@ public class ViewLoader {
      *         is no longer allowed in the fxml file and we loose IDE support.
      */
     public ViewLoader controller(Object root) {
+        PresenterFactory factory = PresenterFactory.discover();
         fxmlLoader.setControllerFactory(type -> {
             if (type == root.getClass()) {
+                factory.injectMembers(root, f -> null);
                 return root;
             } else {
                 try {
-                    return type.newInstance();
+                    return factory.instantiatePresenter(type, f -> null);
                 } catch (RuntimeException e) {
                     throw e;
                 } catch (Exception e) {

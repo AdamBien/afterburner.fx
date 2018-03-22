@@ -132,7 +132,7 @@ public class Injector {
         return product;
     }
 
-    static void injectMembers(final Object instance, Function<String, Object> injectionContext) {
+    public static void injectMembers(final Object instance, Function<String, Object> injectionContext) {
         Class<? extends Object> clazz = instance.getClass();
         injectMembers(clazz, instance, injectionContext);
     }

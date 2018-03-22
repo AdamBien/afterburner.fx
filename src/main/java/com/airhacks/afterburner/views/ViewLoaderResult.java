@@ -5,6 +5,7 @@ import java.util.ResourceBundle;
 
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 
 public class ViewLoaderResult {
@@ -46,5 +47,13 @@ public class ViewLoaderResult {
 
     public void setAsContent(DialogPane dialogPane) {
         dialogPane.setContent(view);
+    }
+
+    public <T> void setAsDialogPane(Dialog<T> dialog) {
+        if (view instanceof DialogPane) {
+            dialog.setDialogPane((DialogPane) view);
+        } else {
+            throw new IllegalStateException("View " + view.getClass().getName() + " has to derive from DialogPane");
+        }
     }
 }

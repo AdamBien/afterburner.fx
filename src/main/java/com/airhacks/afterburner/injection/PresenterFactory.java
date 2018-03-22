@@ -59,20 +59,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author airhacks.com
  */
-@FunctionalInterface
 public interface PresenterFactory {
-
-    /**
-     * This method method replaces the standard afterburner dependency
-     * injection.
-     *
-     * @param <T> the type of the presenter
-     * @param clazz presenter class containing the default constructor.
-     * @param injectionContext a cache of already instantiated and initialized
-     * instances.
-     * @return a fully initialized presenter with injected dependencies.
-     */
-    <T> T instantiatePresenter(Class<T> clazz, Function<String, Object> injectionContext);
 
     /**
      *
@@ -84,7 +71,17 @@ public interface PresenterFactory {
         List<PresenterFactory> factories = StreamSupport.stream(discoveredFactories.spliterator(), false)
                                                         .collect(Collectors.toList());
         if (factories.isEmpty()) {
-            return Injector::instantiatePresenter;
+            return new PresenterFactory() {
+                @Override
+                public <T> T instantiatePresenter(Class<T> clazz, Function<String, Object> injectionContext) {
+                    return Injector.instantiatePresenter(clazz, injectionContext);
+                }
+
+                @Override
+                public void injectMembers(Object controller, Function<String, Object> injectionContext) {
+                    Injector.injectMembers(controller, injectionContext);
+                }
+            };
         }
 
         if (factories.size() == 1) {
@@ -95,4 +92,24 @@ public interface PresenterFactory {
             throw new IllegalStateException("More than one PresenterFactories discovered");
         }
     }
+
+    /**
+     * This method method replaces the standard afterburner dependency
+     * injection.
+     *
+     * @param <T>              the type of the presenter
+     * @param clazz            presenter class containing the default constructor
+     * @param injectionContext a cache of already instantiated and initialized instances
+     * @return a fully initialized presenter with injected dependencies.
+     */
+    <T> T instantiatePresenter(Class<T> clazz, Function<String, Object> injectionContext);
+
+    /**
+     * Populate the given object.
+     * For example, set all fields annotated with {@link javax.inject.Inject}.
+     *
+     * @param instance         the object to inject members into
+     * @param injectionContext a cache of already instantiated and initialized instances
+     */
+    void injectMembers(Object instance, Function<String, Object> injectionContext);
 }
