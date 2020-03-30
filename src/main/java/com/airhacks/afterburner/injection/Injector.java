@@ -54,18 +54,11 @@ public class Injector {
 
     public static <T> T instantiatePresenter(Class<T> clazz, Function<String, Object> injectionContext) {
         @SuppressWarnings("unchecked")
-        T presenter = registerExistingAndInject((T) instanceSupplier.apply(clazz));
-        //after the regular, conventional initialization and injection, perform postinjection
-        Field[] fields = clazz.getDeclaredFields();
-        for (final Field field : fields) {
-            if (field.isAnnotationPresent(Inject.class)) {
-                final String fieldName = field.getName();
-                final Object value = injectionContext.apply(fieldName);
-                if (value != null) {
-                    injectIntoField(field, presenter, value);
-                }
-            }
-        }
+        T presenter = (T) instanceSupplier.apply(clazz);
+        injectMembers(clazz, presenter, injectionContext);
+        initialize(presenter);
+        presenters.add(presenter);
+
         return presenter;
     }
 
@@ -133,29 +126,52 @@ public class Injector {
     }
 
     public static void injectMembers(Class<? extends Object> clazz, final Object instance) throws SecurityException {
+        injectMembers(clazz, instance, null);
+    }
+
+    public static void injectMembers(Class<? extends Object> clazz, final Object instance, Function<String, Object> injectionContext) throws SecurityException {
         LOG.accept("Injecting members for class " + clazz + " and instance " + instance);
+
         Field[] fields = clazz.getDeclaredFields();
+
         for (final Field field : fields) {
+
             if (field.isAnnotationPresent(Inject.class)) {
                 LOG.accept("Field annotated with @Inject found: " + field);
+
                 Class<?> type = field.getType();
                 String key = field.getName();
-                Object value = configurator.getProperty(clazz, key);
-                LOG.accept("Value returned by configurator is: " + value);
-                if (value == null && isNotPrimitiveOrString(type)) {
-                    LOG.accept("Field is not a JDK class");
-                    value = instantiateModelOrService(type);
-                }
-                if (value != null) {
-                    LOG.accept("Value is a primitive, injecting...");
+                Object value;
+
+                if ((injectionContext != null) && ((value = injectionContext.apply(key)) != null)) {
+
+                    // Found injectable content in injectionContext
+                    LOG.accept("Injection context supplied [" + value + "]");
                     injectIntoField(field, instance, value);
+                } else if ((value = configurator.getProperty(clazz, key)) != null) {
+
+                    // Found injectable content in configurator
+                    LOG.accept("Configurator context supplied [" + value + "]");
+                    injectIntoField(field, instance, value);
+                } else if (isNotPrimitiveOrString(type)) {
+
+                    // Attempt to instantiate the type
+                    LOG.accept("Instantiating [" + type.getName() + "]");
+                    value = instantiateModelOrService(type);
+                    injectIntoField(field, instance, value);
+                } else {
+
+                    // No injectable content found
+                    LOG.accept("Warning no injectable content for class [" + clazz.getName() + "] field [" + field.getName() + "]");
                 }
             }
         }
+
         Class<? extends Object> superclass = clazz.getSuperclass();
+
         if (superclass != null) {
             LOG.accept("Injecting members of: " + superclass);
-            injectMembers(superclass, instance);
+            injectMembers(superclass, instance, injectionContext);
         }
     }
 
