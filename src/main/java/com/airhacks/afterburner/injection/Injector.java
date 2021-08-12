@@ -54,18 +54,10 @@ public class Injector {
 
     public static <T> T instantiatePresenter(Class<T> clazz, Function<String, Object> injectionContext) {
         @SuppressWarnings("unchecked")
-        T presenter = registerExistingAndInject((T) instanceSupplier.apply(clazz));
-        //after the regular, conventional initialization and injection, perform postinjection
-        Field[] fields = clazz.getDeclaredFields();
-        for (final Field field : fields) {
-            if (field.isAnnotationPresent(Inject.class)) {
-                final String fieldName = field.getName();
-                final Object value = injectionContext.apply(fieldName);
-                if (value != null) {
-                    injectIntoField(field, presenter, value);
-                }
-            }
-        }
+        T presenter = (T) instanceSupplier.apply(clazz);
+        injectMembers(clazz, presenter, injectionContext);
+        initialize(presenter);
+        presenters.add(presenter);
         return presenter;
     }
 
@@ -132,7 +124,7 @@ public class Injector {
         injectMembers(clazz, instance);
     }
 
-    public static void injectMembers(Class<? extends Object> clazz, final Object instance) throws SecurityException {
+    static void injectMembers(Class<? extends Object> clazz, final Object instance, Function<String, Object> injectionContext) throws SecurityException {
         LOG.accept("Injecting members for class " + clazz + " and instance " + instance);
         Field[] fields = clazz.getDeclaredFields();
         for (final Field field : fields) {
@@ -142,6 +134,10 @@ public class Injector {
                 String key = field.getName();
                 Object value = configurator.getProperty(clazz, key);
                 LOG.accept("Value returned by configurator is: " + value);
+                if (value == null) {
+                    value = injectionContext.apply(key);
+                    LOG.accept("Value returned by injection context is: " + value);
+                }
                 if (value == null && isNotPrimitiveOrString(type)) {
                     LOG.accept("Field is not a JDK class");
                     value = instantiateModelOrService(type);
@@ -155,8 +151,12 @@ public class Injector {
         Class<? extends Object> superclass = clazz.getSuperclass();
         if (superclass != null) {
             LOG.accept("Injecting members of: " + superclass);
-            injectMembers(superclass, instance);
+            injectMembers(superclass, instance, injectionContext);
         }
+    }
+
+    public static void injectMembers(Class<? extends Object> clazz, final Object instance) throws SecurityException {
+        injectMembers(clazz, instance, key -> null);
     }
 
     static void injectIntoField(final Field field, final Object instance, final Object target) {
