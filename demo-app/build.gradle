@@ -4,7 +4,7 @@ apply plugin: 'application'
 mainClassName = 'com.airhacks.afterburner.demo.DemoApplication'
 
 dependencies {
-    compile rootProject
+    implementation rootProject
 }
 
 sourceSets {
