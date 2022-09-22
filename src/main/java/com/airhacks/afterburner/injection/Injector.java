@@ -21,6 +21,7 @@ package com.airhacks.afterburner.injection;
  */
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -35,7 +36,8 @@ import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.inject.Inject;
+
+import jakarta.inject.Inject;
 
 import com.airhacks.afterburner.configuration.Configurator;
 import org.slf4j.Logger;
@@ -230,10 +232,10 @@ public class Injector {
         resetConfigurationSource();
     }
 
-    static Function<Class<?>, Object> getDefaultInstanceSupplier() {
+    static Function<Class<? extends Object> , Object> getDefaultInstanceSupplier() {
         return (c) -> {
             try {
-                return c.newInstance();
+            	return c.newInstance();
             } catch (InstantiationException | IllegalAccessException ex) {
                 throw new IllegalStateException("Cannot instantiate view: " + c, ex);
             }
