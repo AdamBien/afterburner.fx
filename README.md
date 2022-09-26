@@ -1,11 +1,12 @@
-afterburner.fx
-==============
+# afterburner.fx
 
-This is fork of [Adam Bien's afterburner.fx](https://github.com/AdamBien/afterburner.fx) with following PRs integrated.
+The opinionated just-enough [MVP](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter) framework (2.5 classes) for JavaFX.
+This variant offers a more fluent API and more features.
 
-- https://github.com/AdamBien/afterburner.fx/pull/63
-- https://github.com/AdamBien/afterburner.fx/pull/68
-- https://github.com/AdamBien/afterburner.fx/pull/80
-- (documentation only) https://github.com/AdamBien/afterburner.fx/pull/72, https://github.com/AdamBien/afterburner.fx/pull/73, https://github.com/AdamBien/afterburner.fx/pull/74
+Afterburner is a "Just-Enough-Framework" extracted from [airhacks-control](https://github.com/AdamBien/airhacks-control) and used in [airpad](https://github.com/AdamBien/airpad), [lightfish](https://github.com/AdamBien/lightfish) and [floyd](https://github.com/AdamBien/floyd) applications.
 
-Until these PRs are integrated, this fork is maintained.
+Goal: "Less Code, Increased Productivity"
+
+Simplistic example: <https://github.com/JabRef/afterburner.fx/tree/main/demo-app>
+
+See also: <http://afterburner.adam-bien.com>
