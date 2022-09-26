@@ -20,7 +20,7 @@ package com.airhacks.afterburner.injection;
  * #L%
  */
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  *
@@ -28,7 +28,7 @@ import javax.inject.Inject;
  */
 public class AnotherView {
 
-    @Inject
+    @jakarta.inject.Inject
     Boundary boundary;
 
     public Boundary getBoundary() {

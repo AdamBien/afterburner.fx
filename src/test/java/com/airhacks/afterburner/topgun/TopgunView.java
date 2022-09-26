@@ -1,7 +1,8 @@
 package com.airhacks.afterburner.topgun;
 
-import com.airhacks.afterburner.views.FXMLView;
 import java.util.function.Function;
+
+import com.airhacks.afterburner.views.FXMLView;
 
 /*
  * #%L

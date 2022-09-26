@@ -34,4 +34,10 @@ public class DebuggingInjector implements PresenterFactory {
         return Injector.instantiatePresenter(clazz, injectionContext);
     }
 
+	@Override
+	public void injectMembers(Object instance, Function<String, Object> injectionContext) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

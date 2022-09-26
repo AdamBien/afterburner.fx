@@ -19,7 +19,7 @@ package com.airhacks.afterburner.injection;
  * limitations under the License.
  * #L%
  */
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 
 /**
  *

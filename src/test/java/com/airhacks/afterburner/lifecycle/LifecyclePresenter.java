@@ -37,8 +37,9 @@ package com.airhacks.afterburner.lifecycle;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+
+import jakarta.inject.Inject;
 import javafx.fxml.Initializable;
-import javax.inject.Inject;
 
 /**
  * FXML Controller class
