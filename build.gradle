@@ -6,7 +6,7 @@ plugins {
 
 allprojects {
     group = 'org.jabref'
-    version = '1.0.0'
+    version = '1.1.0'
 
     repositories {
         jcenter()
@@ -18,10 +18,17 @@ apply plugin: 'java'
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 javafx {
     version = "19"
     modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.web', 'javafx.swing' ]
 }
+
 dependencies {
     implementation 'jakarta.inject:jakarta.inject-api:2.0.1'
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.8.0-beta1'
