@@ -73,7 +73,10 @@ publishing {
                         id = 'koppor'
                         name = 'Oliver Kopp'
                     }
-                    
+                    developer {
+                        id = 'tobiasdiez'
+                        name = 'Tobias Diez'
+                    }
                     developer {
                         name = 'Adam Bien'
                     }
