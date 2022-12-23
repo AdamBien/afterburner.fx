@@ -21,7 +21,6 @@ package com.airhacks.afterburner.injection;
  */
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -34,12 +33,10 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Function;
 
+import com.airhacks.afterburner.configuration.Configurator;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
-
 import jakarta.inject.Inject;
-
-import com.airhacks.afterburner.configuration.Configurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -154,7 +151,7 @@ public class Injector {
                     value = injectionContext.apply(fieldName);
                 }
 
-                if (value == null && isNotPrimitiveOrString(type)) {
+                if ((value == null) && isNotPrimitiveOrString(type)) {
                     LOGGER.trace("Field is not a JDK class");
                     value = instantiateModelOrService(type, injectionContext);
                 }

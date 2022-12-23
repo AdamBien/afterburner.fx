@@ -3,7 +3,6 @@ plugins {
         id 'maven-publish'
         id 'signing'
         id 'org.openjfx.javafxplugin' version '0.0.13'
-        id 'com.github.johnrengelman.shadow' version '7.1.2'
         id "io.codearte.nexus-staging" version "0.30.0"
 }
 
@@ -18,6 +17,9 @@ allprojects {
 }
 
 apply plugin: 'java'
+apply from: 'eclipse.gradle'
+
+
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
@@ -26,6 +28,10 @@ tasks.withType(JavaCompile) {
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+
+    //withJavadocJar()
+    withSourcesJar()
+
 }
 
 javafx {
@@ -35,10 +41,8 @@ javafx {
 
 dependencies {
     implementation 'jakarta.inject:jakarta.inject-api:2.0.1'
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.8.0-beta1'
+    implementation 'org.slf4j:slf4j-api:2.0.5'
     implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
-    testImplementation group: 'junit', name: 'junit', version:'4.12'
-    testImplementation group: 'org.mockito', name: 'mockito-all', version:'1.10.19'
 }
 
 publishing {

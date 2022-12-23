@@ -57,9 +57,9 @@ public class ViewLoader {
     protected static Executor FX_PLATFORM_EXECUTOR = Platform::runLater;
 
     protected final static ExecutorService PARENT_CREATION_POOL = getExecutorService();
-    protected final Class clazz;
+    protected final Class<?> clazz;
 
-    private ViewLoader(Class clazz) {
+    private ViewLoader(Class<?> clazz) {
         this.clazz = clazz;
         this.resource = this.clazz.getResource(getFXMLName());
         this.bundleName = getBundleName();
@@ -71,7 +71,7 @@ public class ViewLoader {
      * Initialized the {@link ViewLoader} to load the given view.
      * The fxml (or other resources) are not yet loaded.
      */
-    public static ViewLoader view(Class clazz) {
+    public static ViewLoader view(Class<? extends Object> clazz) {
         return new ViewLoader(clazz);
     }
 
@@ -259,7 +259,7 @@ public class ViewLoader {
         LOGGER.debug("File: " + name + " not found, attempting with camel case");
         name = getConventionalName(false, ending);
         found = clazz.getResource(name);
-        if (mandatory && found == null) {
+        if (mandatory && (found == null)) {
             final String message = "Cannot load file " + name;
             LOGGER.error(message);
             LOGGER.error("Stopping initialization phase...");
