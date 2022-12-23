@@ -1,12 +1,16 @@
 
 plugins {
+        id 'java-library'
+        id 'maven-publish'
+        id 'signing'
         id 'org.openjfx.javafxplugin' version '0.0.13'
-        id 'com.github.johnrengelman.shadow' version '7.1.2'
+        id "io.codearte.nexus-staging" version "0.30.0"
 }
 
 allprojects {
     group = 'org.jabref'
-    version = '1.1.0'
+    version = '1.1.0-SNAPSHOT'
+    ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
     repositories {
         jcenter()
@@ -14,6 +18,9 @@ allprojects {
 }
 
 apply plugin: 'java'
+apply from: 'eclipse.gradle'
+
+
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
@@ -22,6 +29,10 @@ tasks.withType(JavaCompile) {
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+
+    //withJavadocJar()
+    withSourcesJar()
+
 }
 
 javafx {
@@ -31,8 +42,101 @@ javafx {
 
 dependencies {
     implementation 'jakarta.inject:jakarta.inject-api:2.0.1'
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.8.0-beta1'
+    implementation 'org.slf4j:slf4j-api:2.0.5'
     implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
-    testImplementation group: 'junit', name: 'junit', version:'4.12'
-    testImplementation group: 'org.mockito', name: 'mockito-all', version:'1.10.19'
 }
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'afterburner.fx'
+            from components.java
+            pom {
+                name = 'afterburner.fx'
+                description = 'Afterburner.fx is a MVP framework for JavaFX.'
+                url = 'https://github.com/JabRef/afterburner.fx'
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution = 'repo'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'siedlerchr'
+                        name = 'Christoph Schwentker'
+                    }
+                
+                    developer {
+                        id = 'koppor'
+                        name = 'Oliver Kopp'
+                    }
+                    developer {
+                        id = 'tobiasdiez'
+                        name = 'Tobias Diez'
+                    }
+                    developer {
+                        name = 'Adam Bien'
+                    }
+                }
+                scm {
+                    url = 'https://github.com/JabRef/afterburner.fx'
+                    connection = 'scm:git:git://github.com/JabRef/afterburner.fx.git'
+                    developerConnection = 'scm:git:git@github.com/JabRef/afterburner.fx.git'
+                }
+            }
+
+            // Remove os-specific 'classifier' in pom for JavaFX dependency
+            // Taken from https://github.com/TestFX/Monocle/issues/64#issuecomment-489215444
+            pom.withXml {
+                Node pomNode = asNode()
+                pomNode.dependencies.'*'.findAll() {
+                    it.groupId.text() == 'org.openjfx'
+                }.each {
+                    it.remove(it.classifier)
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "OSSRH"
+            def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+            url = isReleaseVersion ? releasesRepoUrl : snapshotsRepoUrl
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
+            }
+        }
+        // This currently only works for released versions, as github has problems with overwriting snapshots
+        if (isReleaseVersion) {
+            maven {
+                name = "GitHubPackages"
+                url = "https://maven.pkg.github.com/JabRef/afterburner.fx"
+                credentials {
+                    username = System.getenv("GITHUB_ACTOR")
+                    password = System.getenv("GITHUB_TOKEN")
+                }
+            }
+        }
+    }
+}
+
+signing {
+    required = isReleaseVersion
+    useInMemoryPgpKeys(System.getenv("SIGNING_KEY"), System.getenv("SIGNING_PASSWORD"))
+    sign publishing.publications.mavenJava
+}
+
+nexusStaging {
+    username = System.getenv("MAVEN_USERNAME")
+    password = System.getenv("MAVEN_PASSWORD")
+}
+
+// Don't publish snapshots to Maven Central
+closeAndReleaseRepository.onlyIf { isReleaseVersion }
+closeRepository.onlyIf { isReleaseVersion }
+releaseRepository.onlyIf { isReleaseVersion }
