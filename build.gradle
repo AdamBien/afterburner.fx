@@ -1,5 +1,6 @@
 
 plugins {
+        id 'java-library'
         id 'maven-publish'
         id 'signing'
         id 'org.openjfx.javafxplugin' version '0.0.13'
