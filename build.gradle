@@ -42,7 +42,7 @@ javafx {
 
 dependencies {
     implementation 'jakarta.inject:jakarta.inject-api:2.0.1'
-    implementation 'org.slf4j:slf4j-api:2.0.5'
+    implementation 'org.slf4j:slf4j-api:2.0.6'
     implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
 }
 
