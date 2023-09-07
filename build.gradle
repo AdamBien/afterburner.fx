@@ -3,7 +3,7 @@ plugins {
         id 'java-library'
         id 'maven-publish'
         id 'signing'
-        id 'org.openjfx.javafxplugin' version '0.0.13'
+        id 'org.openjfx.javafxplugin' version '0.1.0'
         id "io.codearte.nexus-staging" version "0.30.0"
 }
 
