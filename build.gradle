@@ -87,17 +87,6 @@ publishing {
                     developerConnection = 'scm:git:git@github.com/JabRef/afterburner.fx.git'
                 }
             }
-
-            // Remove os-specific 'classifier' in pom for JavaFX dependency
-            // Taken from https://github.com/TestFX/Monocle/issues/64#issuecomment-489215444
-            pom.withXml {
-                Node pomNode = asNode()
-                pomNode.dependencies.'*'.findAll() {
-                    it.groupId.text() == 'org.openjfx'
-                }.each {
-                    it.remove(it.classifier)
-                }
-            }
         }
     }
     repositories {
