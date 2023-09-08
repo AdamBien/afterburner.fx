@@ -2,7 +2,7 @@ name: Publish
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main,  hotfix ]
 
 jobs:
   publish:
@@ -10,7 +10,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up JDK
       uses: actions/setup-java@v3
@@ -18,13 +18,10 @@ jobs:
         distribution: 'temurin' # See 'Supported distributions' for available options
         java-version: '17'
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-
     - name: Build
       run: ./gradlew build
 
-    - name: Publish to Sonatype (for snapshots) or to Maven Central and Github Repository (for releases)
+    - name: Publish to Sonatype (for snapshots) or to Maven Central and GitHub Repository (for releases)
       run: ./gradlew publish closeAndReleaseRepository
       env:
         MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
