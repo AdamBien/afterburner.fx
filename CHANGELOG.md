@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Changed
 
-- Completely rewritigen view loader using fluent interface
+- Completely rewritten view loader using fluent interface
 - Switch from Java Util Logging to SLF4J
 - Switch from javax to jakarta
 
