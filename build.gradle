@@ -13,7 +13,7 @@ allprojects {
     ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
     repositories {
-        jcenter()
+        mavenCentral()
     }
 }
 
@@ -21,8 +21,7 @@ apply plugin: 'java'
 apply from: 'eclipse.gradle'
 
 
-
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
@@ -36,7 +35,7 @@ java {
 }
 
 javafx {
-    version = "19"
+    version = "2ß"
     modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.web', 'javafx.swing' ]
 }
 
@@ -68,7 +67,7 @@ publishing {
                         id = 'siedlerchr'
                         name = 'Christoph Schwentker'
                     }
-                
+
                     developer {
                         id = 'koppor'
                         name = 'Oliver Kopp'
@@ -88,16 +87,6 @@ publishing {
                 }
             }
 
-            // Remove os-specific 'classifier' in pom for JavaFX dependency
-            // Taken from https://github.com/TestFX/Monocle/issues/64#issuecomment-489215444
-            pom.withXml {
-                Node pomNode = asNode()
-                pomNode.dependencies.'*'.findAll() {
-                    it.groupId.text() == 'org.openjfx'
-                }.each {
-                    it.remove(it.classifier)
-                }
-            }
         }
     }
     repositories {
