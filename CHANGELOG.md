@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Completely rewritten view loader using fluent interface
 - Switch from Java Util Logging to SLF4J
 - Switch from javax to jakarta
+- Switch to javafx 20
+- Update Gradle to 8.3
+- Update org.openjfx.javafxplugin to 0.1.0
 
 ## 1.0.0 - 2018-02-07
 
