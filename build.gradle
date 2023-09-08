@@ -8,7 +8,7 @@ plugins {
 
 allprojects {
     group = 'org.jabref'
-    version = '2.0.0'
+    version = '2.0.0-SNAPSHOT'
     ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
     repositories {
