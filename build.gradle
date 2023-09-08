@@ -86,7 +86,6 @@ publishing {
                     developerConnection = 'scm:git:git@github.com/JabRef/afterburner.fx.git'
                 }
             }
-
         }
     }
     repositories {
