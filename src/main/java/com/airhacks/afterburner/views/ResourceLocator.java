@@ -68,11 +68,7 @@ public interface ResourceLocator {
     /**
      * This method method replaces the standard afterburner dependency
      * injection.
-     *
-     * @param <T>              the type of the presenter
-     * @param clazz            presenter class containing the default constructor.
-     * @param injectionContext a cache of already instantiated and initialized
-     *                         instances.
+     * @param  name The name of the bundle
      * @return a fully initialized presenter with injected dependencies.
      */
     ResourceBundle getResourceBundle(String name);

@@ -106,7 +106,7 @@ public class ViewLoader {
     /**
      * Sets the given class as controller.
      *
-     * @implNote We don't use {@link FXMLLoader#setController(Object)} since then the {@code fx:controller} attribute
+     *   We don't use {@link FXMLLoader#setController(Object)} since then the {@code fx:controller} attribute
      *         is no longer allowed in the fxml file and we loose IDE support.
      */
     public ViewLoader controller(Object root) {
@@ -141,8 +141,8 @@ public class ViewLoader {
 
     /**
      * Sets the root of the object hierarchy. The value passed to this method
-     * is used as the value of the {@link <fx:root>} tag. This method
-     * must be called prior to loading the document when using {@link <fx:root>}.
+     * is used as the value of the {@code  <fx:root>} tag. This method
+     * must be called prior to loading the document when using {@code  <fx:root>}.
      *
      * @param root the object used as the root
      */

@@ -106,7 +106,7 @@ public interface PresenterFactory {
 
     /**
      * Populate the given object.
-     * For example, set all fields annotated with {@link javax.inject.Inject}.
+     * For example, set all fields annotated with {@link jakarta.inject.Inject}.
      *
      * @param instance         the object to inject members into
      * @param injectionContext a cache of already instantiated and initialized instances
